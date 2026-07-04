@@ -1,26 +1,183 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dot-grid paper palette */
+  --paper: #fffdf7;
+  --dot: #bbd1da;
+  --ink: #1f3a44;
+  --ink-soft: #3f5b66;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  color: var(--ink);
+  font-family: "Times New Roman", Times, serif;
+
+  /* Dot grid */
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--dot) 1.6px, transparent 1.7px);
+  background-size: 26px 26px;
+  background-position: 6px 6px;
 }
+
+/* ---------- Notebook page ---------- */
+.page {
+  position: relative;
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+/* Spiral coil binding across the top */
+.coil {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  z-index: 30;
+  filter: drop-shadow(0 6px 5px rgba(20, 40, 48, 0.22));
+}
+
+/* ---------- Hero content ---------- */
+.hero {
+  position: relative;
+  z-index: 10;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(120px, 18vh, 200px) 28px 96px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transform: rotate(-2deg);
+}
+.eyebrow::before {
+  content: "";
+  width: 42px;
+  height: 2px;
+  background: var(--ink-soft);
+  border-radius: 2px;
+}
+
+.title {
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 700;
+  font-size: clamp(4.5rem, 17vw, 10rem);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 8px 0 0;
+  text-shadow: 2px 3px 0 rgba(255, 255, 255, 0.4);
+}
+.title .accent {
+  display: block;
+  color: #e07a5f;
+  transform: rotate(-1.5deg);
+  transform-origin: left center;
+}
+
+.lede {
+  max-width: 30ch;
+  margin: 30px 0 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.lede .marker {
+  background: linear-gradient(120deg, transparent 4%, #ffe27a 4% 96%, transparent 96%);
+  padding: 0 3px;
+  color: var(--ink);
+  border-radius: 2px;
+}
+
+.signature {
+  margin-top: 44px;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.5rem;
+  color: var(--ink-soft);
+  transform: rotate(-3deg);
+}
+
+/* ---------- Sticky-note nav ---------- */
+.tabs {
+  position: fixed;
+  top: 130px;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tab {
+  --w: 210px;
+  --peek: 58px;
+  position: relative;
+  width: var(--w);
+  padding: 16px 22px 16px 26px;
+  display: block;
+  text-decoration: none;
+  color: #2a2416;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: 3px 0 0 3px;
+  box-shadow:
+    -6px 7px 10px rgba(20, 40, 48, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateX(calc(var(--w) - var(--peek))) rotate(var(--rot, 0deg));
+  transition:
+    transform 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.42s ease;
+  will-change: transform;
+}
+
+/* the little folded corner of each note */
+.tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  border-width: 0 0 18px 18px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0, 0, 0, 0.12) transparent;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  transform: translateX(0) rotate(0deg);
+  box-shadow: -12px 12px 20px rgba(20, 40, 48, 0.3);
+  outline: none;
+}
+
+.tab--home { background: #ffe27a; --rot: 1.5deg; }
+.tab--about { background: #ffb3c1; --rot: -1.5deg; }
+.tab--work { background: #a7e0a0; --rot: 1deg; }
+.tab--writing { background: #ffc98a; --rot: -2deg; }
+.tab--contact { background: #c3b8f7; --rot: 1.5deg; }
+
+@media (max-width: 640px) {
+  .tabs { top: 108px; gap: 12px; }
+  .tab { --w: 168px; --peek: 46px; font-size: 1.4rem; padding: 12px 16px; }
+}
+
