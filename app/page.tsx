@@ -29,8 +29,40 @@ const RIBBON = [
 /*  Slides — the overview rail doubles as the nav                      */
 /* ------------------------------------------------------------------ */
 
-/* A card placed by hand: position and size, measured off the deck. */
-type CardBox = { x: number; y: number; w: number; h: number; name: string };
+/* A card placed by hand: position and size, measured off the deck.
+   `study` is optional — a card without one still opens the plain title view. */
+type CardBox = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  name: string;
+  study?: Study;
+};
+
+/* One block of a case study. Everything past `heading` is optional, so a
+   section can be pure copy, a single big image slot, a numbered step grid,
+   or rows of screens — whichever the project needs.
+   `todo: true` marks a section that still needs writing; it renders a tag
+   and greys the prompt text, so nothing reads as finished when it isn't. */
+type Section = {
+  heading: string;
+  lead?: string; // one large sentence
+  body?: string; // supporting paragraph
+  todo?: boolean;
+  shot?: "hero" | "wide"; // a single placeholder box
+  steps?: { step: string; caption: string }[]; // numbered grid, one shot each
+  groups?: { label?: string; shots: number }[]; // labelled rows of shots
+};
+
+/* A written-up project. Every image slot is deliberately left blank —
+   drop the artwork into the .shot boxes when the exports are ready. */
+type Study = {
+  kicker: string;
+  intro: string;
+  facts: { label: string; value: string }[];
+  sections: Section[];
+};
 
 type Slide = {
   id: string;
@@ -53,6 +85,176 @@ const COLLAGE: CardBox[] = [
   { x: 518, y: 535, w: 281, h: 305, name: "project name" },
 ];
 
+/* Product Discovery Kiosk — written up from the Behance case study. */
+const KIOSK: Study = {
+  kicker: "UI/UX · Self-service retail kiosk · Pine Labs",
+  intro:
+    "A self-service digital kiosk interface, enabling customers to browse smartphones and other devices, compare models side by side, and complete purchases directly at the kiosk.",
+  facts: [
+    {
+      label: "Objective",
+      value:
+        "Create stickiness with merchants and maximize brand visibility for Pine Labs.",
+    },
+    { label: "Merchant Type", value: "Electronic Store" },
+    {
+      label: "Solution Brief",
+      value:
+        "To build a UI that enables customers to seamlessly evaluate different phones and make an informed purchase, enhancing customer satisfaction.",
+    },
+  ],
+  sections: [
+    {
+      heading: "The Challenge",
+      todo: true,
+      body: "What made this hard? Name what was breaking before the kiosk — shoppers waiting on staff to answer spec questions, no way to hold two phones side by side, inconsistent information across the shop floor.",
+    },
+    {
+      heading: "Research",
+      todo: true,
+      body: "What did you look at before designing? Store visits, how customers compare phones today, existing kiosk and e-commerce comparison patterns, and the constraints of a fixed in-store touchscreen.",
+      shot: "wide",
+    },
+    {
+      heading: "Who It's For",
+      todo: true,
+      body: "One or two short profiles — the shopper deciding between two flagships, and the store staff the kiosk is meant to free up. What each needs from the screen.",
+      groups: [{ shots: 2 }],
+    },
+    {
+      heading: "Information Architecture",
+      todo: true,
+      body: "Sitemap or flow diagram: how someone gets from the idle home screen to a completed checkout, and how they recover if they change their mind.",
+      shot: "wide",
+    },
+    {
+      heading: "Wireframes",
+      todo: true,
+      body: "Early low-fidelity layouts for browse, compare and checkout, before the visual design landed.",
+      groups: [{ shots: 3 }],
+    },
+    {
+      heading: "Design System",
+      todo: true,
+      body: "Type scale, colour, buttons, cards and the comparison table — sized for touch targets at kiosk viewing distance rather than for a phone in the hand.",
+      shot: "wide",
+    },
+    {
+      heading: "User Journey",
+      steps: [
+        { step: "Step 1", caption: "Choose from various curated filters." },
+        { step: "Step 2", caption: "Browse through phone inventory." },
+        { step: "Step 3", caption: "View phone details." },
+        { step: "Step 4", caption: "Select phone to compare." },
+        { step: "Step 5", caption: "Compare features between phone models." },
+        { step: "Step 6", caption: "Add to cart and checkout." },
+      ],
+    },
+    {
+      heading: "Responsive Design",
+      lead: "Designed to fit your needs.",
+      body: "The same interface holds up across kiosk screen sizes — two devices side by side on the smaller panel, three on the wider one.",
+      shot: "wide",
+    },
+    {
+      heading: "Screens",
+      groups: [
+        { label: "Home Screens", shots: 3 },
+        { label: "Compare Devices", shots: 2 },
+        { label: "Checkout", shots: 3 },
+      ],
+    },
+    {
+      heading: "Outcome",
+      todo: true,
+      body: "How did it land? Anything measurable is ideal — time taken to compare, completed checkouts, staff time saved — but a short honest reflection on what you would change works too.",
+    },
+  ],
+};
+
+/* The Bounce Factor — the Behance gallery is only a hero, a graphics board
+   and a sign-off, so the written sections below are marked todo: they are
+   prompts for Nayana to fill in, not claims about work already done. */
+const BOUNCE: Study = {
+  kicker: "UI/UX Design · Graphic Design · Sportswear brand",
+  intro:
+    "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
+  facts: [
+    { label: "Brand", value: "The Bounce Factor — thebouncefactor.in" },
+    { label: "Discipline", value: "UI/UX Design, Graphic Design" },
+    {
+      label: "Deliverables",
+      value:
+        "Storefront website, social media creatives, jersey design and product brochure.",
+    },
+  ],
+  sections: [
+    {
+      heading: "The Challenge",
+      todo: true,
+      body: "What was hard about this one? Name the problem the brand had before the redesign — teams could not picture a custom kit before ordering, the old site did not convert, the brand had no consistent visual language across channels.",
+    },
+    {
+      heading: "Research",
+      todo: true,
+      body: "What did you look at before designing? Competitor teardowns, what team captains actually ask for when ordering kit, existing sportswear storefronts. Note anything that changed your direction.",
+      shot: "wide",
+    },
+    {
+      heading: "Who It's For",
+      todo: true,
+      body: "One or two short profiles — the team captain ordering twenty kits on a deadline, the individual player after one custom jersey. What each needs from the site.",
+      groups: [{ shots: 2 }],
+    },
+    {
+      heading: "Information Architecture",
+      todo: true,
+      body: "Sitemap or flow diagram: how someone gets from landing to a finished custom order.",
+      shot: "wide",
+    },
+    {
+      heading: "Wireframes",
+      todo: true,
+      body: "Early low-fidelity layouts before the visual design landed.",
+      groups: [{ shots: 3 }],
+    },
+    {
+      heading: "Design System",
+      todo: true,
+      body: "Type scale, colour, buttons and cards — the pieces the site is built from.",
+      shot: "wide",
+    },
+    {
+      heading: "The Website",
+      lead: "Gear that matches your hustle.",
+      body: "Customize your jersey with high-quality, performance-ready designs made for your game.",
+      shot: "hero",
+    },
+    {
+      heading: "Graphics",
+      body: "Social Media · Jersey Design · Product Brochure",
+      groups: [
+        { label: "Social Media", shots: 3 },
+        { label: "Jersey Design", shots: 3 },
+        { label: "Product Brochure", shots: 2 },
+      ],
+    },
+    {
+      heading: "Outcome",
+      todo: true,
+      body: "How did it land? Anything measurable is ideal — orders, enquiries, time to place an order — but a short honest reflection on what you would change works too.",
+    },
+  ],
+};
+
+/* UI/UX gets its own copy of the collage so cards can carry case studies
+   without changing the Other slide, which shares the same layout. */
+const UIUX_CARDS: CardBox[] = COLLAGE.map((c, i) => {
+  if (i === 2) return { ...c, name: "Product Discovery Kiosk", study: KIOSK };
+  if (i === 3) return { ...c, name: "The Bounce Factor", study: BOUNCE };
+  return c;
+});
+
 const SLIDES: Slide[] = [
   { id: "home", title: "Home", color: "#FF2E77", ink: "#000000", accent: "#FF2E77" },
   {
@@ -62,7 +264,7 @@ const SLIDES: Slide[] = [
     ink: "#000000",
     accent: "#3DC83B",
     heading: "UI/UX work",
-    cards: COLLAGE,
+    cards: UIUX_CARDS,
   },
   {
     id: "touchdesigner",
@@ -198,11 +400,12 @@ export default function Page() {
               {project !== null && (slide.cards || slide.projects) ? (
                 <ProjectDetail
                   name={
-                    slide.cards?.[project].name ??
+                    slide.cards?.[project]?.name ??
                     slide.projects?.[project] ??
                     "project"
                   }
                   index={project}
+                  study={slide.cards?.[project]?.study}
                   onBack={() => setProject(null)}
                 />
               ) : slide.cards ? (
@@ -454,10 +657,12 @@ function SlideScrollbar({
 function ProjectDetail({
   name,
   index,
+  study,
   onBack,
 }: {
   name: string;
   index: number;
+  study?: Study;
   onBack: () => void;
 }) {
   return (
@@ -468,6 +673,76 @@ function ProjectDetail({
       <h1 className="detail__title">
         ({index + 1}) {name}
       </h1>
+      {study && <CaseStudy study={study} />}
     </div>
+  );
+}
+
+/* Every .shot is an empty bordered box, matching the card placeholders —
+   the artwork drops in later. */
+function CaseStudy({ study }: { study: Study }) {
+  return (
+    <div className="study">
+      <p className="study__kicker">{study.kicker}</p>
+      <p className="study__intro">{study.intro}</p>
+
+      <span className="shot shot--hero" />
+
+      <dl className="study__facts">
+        {study.facts.map((f) => (
+          <div key={f.label} className="study__fact">
+            <dt className="study__label">{f.label}</dt>
+            <dd className="study__value">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {study.sections.map((s) => (
+        <StudySection key={s.heading} section={s} />
+      ))}
+    </div>
+  );
+}
+
+function StudySection({ section: s }: { section: Section }) {
+  return (
+    <section className="study__section">
+      <h2 className="study__heading">
+        {s.heading}
+        {s.todo && <span className="study__todo">to write</span>}
+      </h2>
+
+      {s.lead && <p className="study__lead">{s.lead}</p>}
+      {s.body && (
+        <p className={s.todo ? "study__caption study__prompt" : "study__caption"}>
+          {s.body}
+        </p>
+      )}
+
+      {s.shot && <span className={`shot shot--${s.shot}`} />}
+
+      {s.steps && (
+        <ol className="study__journey">
+          {s.steps.map((step) => (
+            <li key={step.step} className="study__step">
+              <span className="shot shot--screen" />
+              <p className="study__stepName">{step.step}</p>
+              <p className="study__caption">{step.caption}</p>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {s.groups?.map((g, gi) => (
+        <div key={g.label ?? gi} className="study__group">
+          {g.label && <p className="study__groupName">{g.label}</p>}
+          <div className="study__row">
+            {Array.from({ length: g.shots }, (_, i) => (
+              <span key={i} className="shot shot--screen" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
   );
 }

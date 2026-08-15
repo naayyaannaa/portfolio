@@ -16,6 +16,13 @@
   --line: #ababab;
   --pink: #ff2e77;
   --fit: 1;
+
+  /* 1-bit pixel cursors, drawn on a 10x17 / 11x16 grid and emitted at 2x so
+     every cell is a crisp 2px block. The numbers are the hotspot in CSS px:
+     the arrow's tip is its top-left pixel, the hand's is the fingertip.
+     Image cursors live outside the document, so --fit never scales them. */
+  --cursor-arrow: url("/cursor-arrow.svg") 0 0, default;
+  --cursor-hand: url("/cursor-hand.svg") 9 0, pointer;
 }
 
 * {
@@ -37,6 +44,22 @@ body {
   font-family: var(--font);
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
+}
+
+/* pixel cursors — see the --cursor-* vars up top */
+body {
+  cursor: var(--cursor-arrow);
+}
+
+a,
+button,
+[role="button"] {
+  cursor: var(--cursor-hand);
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: var(--cursor-arrow);
 }
 
 /* 1280 x 720, aspect-ratio 16/9 — scaled as a whole to fit the window */
@@ -93,7 +116,7 @@ body {
   padding: 0;
   border: 0;
   background: none;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   font: inherit;
   font-size: 14px;
   font-weight: 300;
@@ -227,7 +250,7 @@ body {
 .thumb {
   appearance: none;
   border: 0;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   display: flex;
   width: 150px;
   height: 93px;
@@ -399,7 +422,7 @@ a.accent:hover {
   border: 0;
   background: none;
   padding: 0;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   font: inherit;
   color: inherit;
   display: flex;
@@ -434,9 +457,11 @@ a.accent:hover {
   line-height: 1.2;
 }
 
-/* project detail view */
+/* project detail view — same 976 content box as .work */
 .detail {
-  padding: 24px;
+  width: 976px;
+  margin: 0 24px;
+  padding: 24px 0;
 }
 
 .detail__back {
@@ -444,7 +469,7 @@ a.accent:hover {
   border: 0;
   background: none;
   padding: 0;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   font: inherit;
   font-size: 16px;
   font-weight: 300;
@@ -470,6 +495,201 @@ a.accent:hover {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Case study — the long-form body under a project title.             */
+/*  Every .shot is an empty placeholder box using the same 1px #5d5d5d */
+/*  stroke as .card__media, so the artwork can drop straight in.       */
+/* ------------------------------------------------------------------ */
+
+.study {
+  padding-bottom: 48px;
+}
+
+.study__kicker {
+  margin: 12px 0 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #5d5d5d;
+}
+
+.study__intro {
+  margin: 32px 0 0;
+  max-width: 720px;
+  font-size: 28px;
+  font-weight: 200;
+  line-height: 1.27;
+  color: var(--ink);
+}
+
+/* ---- placeholders ---- */
+
+.shot {
+  display: block;
+  border: 1px solid #5d5d5d;
+  background: var(--paper);
+}
+
+.shot--hero {
+  margin-top: 40px;
+  width: 100%;
+  height: 420px;
+}
+
+.shot--wide {
+  margin-top: 24px;
+  width: 100%;
+  height: 380px;
+}
+
+/* portrait kiosk screen */
+.shot--screen {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+}
+
+/* ---- Objective / Merchant Type / Solution Brief ---- */
+
+.study__facts {
+  margin: 48px 0 0;
+}
+
+.study__fact {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+
+.study__label {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.28px;
+  color: var(--accent, var(--pink));
+}
+
+.study__value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 200;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---- sections ---- */
+
+.study__section {
+  margin-top: 64px;
+}
+
+/* the heading carries no bottom margin — each following block sets its own
+   top margin, so sections with different contents still space evenly */
+.study__heading {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.32px;
+  color: var(--accent, var(--pink));
+}
+
+/* marks a section that still needs writing */
+.study__todo {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5d5d5d;
+  border: 1px solid var(--line);
+  padding: 2px 8px;
+}
+
+/* placeholder copy: a prompt for what to write, not finished text */
+.study__prompt {
+  color: #5d5d5d;
+  font-style: italic;
+}
+
+.study__lead {
+  margin: 16px 0 0;
+  font-size: 28px;
+  font-weight: 200;
+  line-height: 1.27;
+  color: var(--ink);
+}
+
+/* body copy sitting straight under a heading needs more room than a
+   caption tucked under a lead line */
+.study__heading + .study__caption {
+  margin-top: 16px;
+}
+
+.study__caption {
+  margin: 8px 0 0;
+  max-width: 720px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+/* ---- user journey: 3 across, 6 steps ---- */
+
+.study__journey {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px 32px;
+}
+
+.study__step {
+  display: flex;
+  flex-direction: column;
+}
+
+.study__stepName {
+  margin: 12px 0 0;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.study__step .study__caption {
+  margin-top: 4px;
+}
+
+/* ---- screens ---- */
+
+.study__group {
+  margin-top: 32px;
+}
+
+.study__groupName {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.study__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Classic stepper scrollbar — far right, full height of the section  */
 /* ------------------------------------------------------------------ */
 
@@ -491,7 +711,7 @@ a.accent:hover {
   padding: 0;
   background: #ffffff;
   border: 1px solid #5d5d5d;
-  cursor: pointer;
+  cursor: var(--cursor-hand);
   display: grid;
   place-items: center;
 }
@@ -527,11 +747,8 @@ a.accent:hover {
   right: 0;
   background: #ffffff;
   border: 1px solid #5d5d5d;
-  cursor: grab;
-}
-
-.scrollbar__thumb:active {
-  cursor: grabbing;
+  /* was grab/grabbing — the pixel set has one hand, so both states share it */
+  cursor: var(--cursor-hand);
 }
 
 /* the custom bar replaces the slide's native one */
