@@ -383,20 +383,123 @@ a.accent:hover {
   -webkit-text-stroke-color: var(--accent-stroke, transparent);
 }
 
-.work__grid {
+/* ---- reel layout: ruled rows, flush right in the 976 content box ---- */
+
+/* the rows set the height, so this one hugs rather than holding 820 */
+.work--reel {
+  height: auto;
+}
+
+.work__reel {
   margin: 60px 0 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, 279px);
-  justify-content: space-between;
-  row-gap: 32px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 24px;
 }
 
-/* cards sit at staggered heights, as in the deck */
-.work__cell {
-  margin-top: var(--stagger, 0);
+/* Closed and open heights of the row. 89 is the mock; 190 is 338 wide at
+   16:9. The row is the only thing that animates — everything inside is
+   bottom-aligned, so growing it lifts the red block off the rule and leaves
+   the name sitting on it, and normal flow pushes the rows below down. */
+.reel__row {
+  --frame-closed: 89px;
+  --frame-open: 190px;
+}
+
+.reel {
+  appearance: none;
+  padding: 0;
+  background: none;
+  cursor: var(--cursor-hand);
+  font: inherit;
+  text-align: left;
+  display: flex;
+  width: 892px;
+  height: var(--frame-closed);
+  justify-content: space-between;
+  align-items: flex-end;
+  border: 0;
+  border-bottom: 1px solid #000;
+  transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.is-open .reel {
+  height: var(--frame-open);
+}
+
+.reel:focus-visible {
+  outline: none;
+}
+
+/* Figma says font-family: "Stack Sans Notch" — that literal name has no
+   @font-face here, since next/font scopes the family to a hashed name and
+   exposes it as --font-stack. var(--font) is that same face. */
+.reel__name {
+  flex: 1 0 0;
+  color: #000;
+  font-family: var(--font);
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+  letter-spacing: -0.24px;
+}
+
+/* stretched so the block spans the row's full height at any height — that is
+   what makes it grow upward off the rule as the row opens */
+.reel__side {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px;
+  flex: 1 0 0;
+  align-self: stretch;
+}
+
+/* the window the cover slides out of — it clips both cover and video */
+.reel__media {
+  position: relative;
+  width: 338px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.reel__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* stands in until a video is dropped in — same stroke as the other slots */
+.reel__slot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #5d5d5d;
+  background: var(--paper);
+}
+
+.reel__cover {
+  position: absolute;
+  inset: 0;
+  background: var(--accent, var(--pink));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.is-open .reel__cover {
+  transform: translateY(-100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel,
+  .reel__cover {
+    transition-duration: 0.01ms;
+  }
 }
 
 /* ---- collage layout: cards placed and sized individually ---- */

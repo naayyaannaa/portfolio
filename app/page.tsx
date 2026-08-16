@@ -64,6 +64,15 @@ type Study = {
   sections: Section[];
 };
 
+/* A row on the TouchDesigner reel. The red block is a cover sitting over the
+   video — drop an .mp4 in public/videos and point `video` at it; a row with
+   no video still slides open, onto an empty placeholder. */
+type Work = {
+  name: string;
+  video?: string;
+  poster?: string;
+};
+
 type Slide = {
   id: string;
   title: string;
@@ -72,7 +81,7 @@ type Slide = {
   accent: string;
   strokeColor?: string;
   heading?: string;
-  projects?: string[];
+  works?: Work[];
   cards?: CardBox[];
 };
 
@@ -273,7 +282,13 @@ const SLIDES: Slide[] = [
     ink: "#000000",
     accent: "#FF2E2E",
     heading: "TouchDesigner work",
-    projects: ["project name", "project name", "project name"],
+    works: [
+      { name: "Project Name" },
+      { name: "Project Name" },
+      { name: "Project Name" },
+      { name: "Project Name" },
+      { name: "Project Name" },
+    ],
   },
   {
     id: "other",
@@ -293,10 +308,6 @@ const SLIDES: Slide[] = [
     accent: "#283EFF",
   },
 ];
-
-/* Cards sit at staggered heights across the row, measured off the deck.
-   Cycles if there are more than three projects. */
-const STAGGER = [0, 31, 13];
 
 /* Always two rows, with the extra item on the first — matches the deck:
    5 items -> 3 + 2, 4 -> 2 + 2, 2 -> 1 + 1. Each row is flush right. */
@@ -397,15 +408,11 @@ export default function Page() {
         <main className="stage">
           <article className="slide" style={accentVars}>
             <div className="slide__scroll" ref={scrollRef}>
-              {project !== null && (slide.cards || slide.projects) ? (
+              {project !== null && slide.cards ? (
                 <ProjectDetail
-                  name={
-                    slide.cards?.[project]?.name ??
-                    slide.projects?.[project] ??
-                    "project"
-                  }
+                  name={slide.cards[project]?.name ?? "project"}
                   index={project}
-                  study={slide.cards?.[project]?.study}
+                  study={slide.cards[project]?.study}
                   onBack={() => setProject(null)}
                 />
               ) : slide.cards ? (
@@ -414,11 +421,10 @@ export default function Page() {
                   cards={slide.cards}
                   onOpen={setProject}
                 />
-              ) : slide.projects ? (
-                <WorkSlide
+              ) : slide.works ? (
+                <ReelSlide
                   heading={slide.heading ?? slide.title}
-                  projects={slide.projects}
-                  onOpen={setProject}
+                  works={slide.works}
                 />
               ) : slide.id === "contact" ? (
                 <Split
@@ -467,35 +473,82 @@ function Split({ title, body }: { title: string; body: React.ReactNode }) {
   );
 }
 
-/* Grid layout — TouchDesigner keeps this. */
-function WorkSlide({
-  heading,
-  projects,
-  onOpen,
-}: {
-  heading: string;
-  projects: string[];
-  onOpen: (i: number) => void;
-}) {
+/* Reel layout — TouchDesigner. Ruled rows, each with a red block sitting in
+   the bottom-right corner. Pointing at a row opens the whole row accordion-
+   style: it grows from 89 to 190, and because everything in it is bottom-
+   aligned the block stretches to a 16:9 frame while the name rides down with
+   the rule. The red cover slides up out of that frame as it grows, uncovering
+   the video. Rows below are pushed down by ordinary flow.
+   One row is open at a time; closing rewinds, so a row always opens on its
+   first frame. */
+function ReelSlide({ heading, works }: { heading: string; works: Work[] }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+
+  /* Drive playback off the open row rather than off the pointer, so the row
+     that closes because another one opened is rewound too.
+     play() rejects when the browser declines to autoplay — the row still
+     opens, so there is nothing to recover from. */
+  useEffect(() => {
+    videos.current.forEach((v, i) => {
+      if (!v) return;
+      if (i === open) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+        v.currentTime = 0;
+      }
+    });
+  }, [open]);
+
   return (
-    <div className="work">
+    <div className="work work--reel">
       <h1 className="work__title">{heading}</h1>
-      <ul className="work__grid">
-        {projects.map((name, i) => (
-          <li
-            key={i}
-            className="work__cell"
-            style={{ "--stagger": `${STAGGER[i % STAGGER.length]}px` } as React.CSSProperties}
-          >
-            <button type="button" className="card" onClick={() => onOpen(i)}>
-              {/* project image goes here */}
-              <span className="card__media" />
-              <span className="card__name">
-                ({i + 1}) {name}
-              </span>
-            </button>
-          </li>
-        ))}
+      <ul className="work__reel">
+        {works.map((w, i) => {
+          const isOpen = open === i;
+          return (
+            <li key={i} className={isOpen ? "reel__row is-open" : "reel__row"}>
+              {/* click opens rather than toggles, so a tap (touch, where there
+                  is no hover) and a click on an already-open row both land on
+                  the same state instead of fighting the pointer */}
+              <button
+                type="button"
+                className="reel"
+                aria-expanded={isOpen}
+                onMouseEnter={() => setOpen(i)}
+                onMouseLeave={() => setOpen(null)}
+                onFocus={() => setOpen(i)}
+                onBlur={() => setOpen(null)}
+                onClick={() => setOpen(i)}
+              >
+                <span className="reel__name">{w.name}</span>
+                <span className="reel__side">
+                  <span className="reel__media">
+                    {w.video ? (
+                      <video
+                        ref={(el) => {
+                          videos.current[i] = el;
+                        }}
+                        className="reel__video"
+                        src={w.video}
+                        poster={w.poster}
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : (
+                      /* video goes here */
+                      <span className="reel__slot" />
+                    )}
+                    <span className="reel__cover" />
+                  </span>
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
