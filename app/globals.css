@@ -372,9 +372,14 @@ a.accent:hover {
   flex-direction: column;
 }
 
+/* On Other this resolves to Figma's spec exactly: #FFFC2E with a 1px #000
+   stroke, fed by --accent / --accent-stroke off the slide. The other slides
+   reuse the rule with their own accent and no stroke. */
 .work__title {
   margin: 0;
+  font-family: var(--font);
   font-size: 64px;
+  font-style: normal;
   font-weight: 300;
   line-height: normal;
   letter-spacing: -0.64px;
@@ -397,7 +402,7 @@ a.accent:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 24px;
+  gap: 36px;
 }
 
 /* Closed and open heights of the row. 89 is the mock; 190 is 338 wide at
@@ -417,7 +422,7 @@ a.accent:hover {
   font: inherit;
   text-align: left;
   display: flex;
-  width: 892px;
+  width: 800px;
   height: var(--frame-closed);
   justify-content: space-between;
   align-items: flex-end;
@@ -434,18 +439,64 @@ a.accent:hover {
   outline: none;
 }
 
-/* Figma says font-family: "Stack Sans Notch" — that literal name has no
-   @font-face here, since next/font scopes the family to a hashed name and
-   exposes it as --font-stack. var(--font) is that same face. */
-.reel__name {
+/* Bottom-anchored, so the name sits on the rule with the row closed. The
+   description grows underneath it and lifts it — see .reel__blurb. */
+.reel__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
   flex: 1 0 0;
+  align-self: stretch;
+}
+
+/* matches .card__name on the collage slides, so project names read the same
+   on the reel as they do on UI/UX */
+.reel__name {
   color: #000;
-  font-family: var(--font);
-  font-size: 24px;
-  font-style: normal;
-  font-weight: 300;
-  line-height: normal;
-  letter-spacing: -0.24px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* Takes no height when closed, then swallows every spare pixel of the row as
+   it opens — that is what carries the name up to the top. Growing the flex
+   rather than the text's own height is what makes the name land at the top
+   instead of just clearing the description. align-content keeps the text
+   itself on the rule the whole way. visibility keeps it out of the
+   accessibility tree and out of text selection until the row is open. */
+.reel__blurb {
+  display: grid;
+  align-content: end;
+  flex: 0 1 0;
+  min-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    flex-grow 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.5s;
+}
+
+.is-open .reel__blurb {
+  flex-grow: 1;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    flex-grow 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+.reel__blurbText {
+  max-width: 320px;
+  color: #5d5d5d;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 /* stretched so the block spans the row's full height at any height — that is
@@ -497,7 +548,8 @@ a.accent:hover {
 
 @media (prefers-reduced-motion: reduce) {
   .reel,
-  .reel__cover {
+  .reel__cover,
+  .reel__blurb {
     transition-duration: 0.01ms;
   }
 }

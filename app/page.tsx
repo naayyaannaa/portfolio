@@ -69,6 +69,7 @@ type Study = {
    no video still slides open, onto an empty placeholder. */
 type Work = {
   name: string;
+  blurb?: string;
   video?: string;
   poster?: string;
 };
@@ -283,11 +284,11 @@ const SLIDES: Slide[] = [
     accent: "#FF2E2E",
     heading: "TouchDesigner work",
     works: [
-      { name: "Project Name" },
-      { name: "Project Name" },
-      { name: "Project Name" },
-      { name: "Project Name" },
-      { name: "Project Name" },
+      { name: "Project Name", blurb: "Short project description goes here." },
+      { name: "Project Name", blurb: "Short project description goes here." },
+      { name: "Project Name", blurb: "Short project description goes here." },
+      { name: "Project Name", blurb: "Short project description goes here." },
+      { name: "Project Name", blurb: "Short project description goes here." },
     ],
   },
   {
@@ -522,7 +523,14 @@ function ReelSlide({ heading, works }: { heading: string; works: Work[] }) {
                 onBlur={() => setOpen(null)}
                 onClick={() => setOpen(i)}
               >
-                <span className="reel__name">{w.name}</span>
+                <span className="reel__text">
+                  <span className="reel__name">{w.name}</span>
+                  {w.blurb ? (
+                    <span className="reel__blurb">
+                      <span className="reel__blurbText">{w.blurb}</span>
+                    </span>
+                  ) : null}
+                </span>
                 <span className="reel__side">
                   <span className="reel__media">
                     {w.video ? (
