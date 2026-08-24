@@ -19,7 +19,7 @@ const RIBBON = [
     ],
   },
   {
-    label: "Stack",
+    label: "Tech Stack",
     items: ["Figma", "TouchDesigner", "Photoshop", "Claude Code"],
   },
   { label: "Links", items: ["Instagram", "LinkedIn", "Behance"] },
@@ -59,6 +59,7 @@ type Section = {
    drop the artwork into the .shot boxes when the exports are ready. */
 type Study = {
   kicker: string;
+  date?: string; // sits beside the detail title
   intro: string;
   facts: { label: string; value: string }[];
   sections: Section[];
@@ -86,6 +87,58 @@ type Slide = {
   cards?: CardBox[];
 };
 
+/* Blysk Handcrafted — the Behance gallery is gated past the preview, so the
+   only things stated as fact below are what the page itself lists: the brand,
+   the discipline, the tool and the publish date. Everything written is marked
+   todo, the same way BOUNCE handles it — prompts for Nayana, not claims. */
+const BLYSK: Study = {
+  kicker: "Branding · Handcrafted goods",
+  date: "August 2025",
+  intro:
+    "Brand identity for Blysk Handcrafted, a maker of handcrafted goods — built out in Figma from the mark through to the applied system.",
+  facts: [
+    { label: "Brand", value: "Blysk Handcrafted" },
+    { label: "Discipline", value: "Branding" },
+    { label: "Tools", value: "Figma" },
+  ],
+  sections: [
+    {
+      heading: "The Brief",
+      todo: true,
+      body: "What was Blysk asking for, and what did handcrafted have to mean visually? Name the starting point — a new brand, a rename, or an identity that had outgrown itself.",
+    },
+    {
+      heading: "Direction",
+      todo: true,
+      body: "The references and the thinking behind the look — where the warmth comes from, and what you deliberately steered away from.",
+      shot: "wide",
+    },
+    {
+      heading: "The Mark",
+      todo: true,
+      body: "The logo, its construction and the variants it ships in — primary, stacked, and whatever survives at small sizes.",
+      groups: [{ shots: 2 }],
+    },
+    {
+      heading: "Identity System",
+      todo: true,
+      body: "Type, colour and the supporting elements — the pieces that let the brand hold together across things you did not design yourself.",
+      shot: "wide",
+    },
+    {
+      heading: "Applications",
+      todo: true,
+      body: "The identity in use: packaging, labels, social and anything physical the handcrafted line called for.",
+      groups: [{ label: "Applications", shots: 3 }],
+    },
+    {
+      heading: "Outcome",
+      todo: true,
+      body: "How it landed, and what you would push further given another pass.",
+    },
+  ],
+};
+
 /* Five-card collage used by UI/UX and Other. Sizes deliberately differ. */
 const COLLAGE: CardBox[] = [
   { x: 42, y: 162, w: 267, h: 276, name: "project name" },
@@ -98,6 +151,7 @@ const COLLAGE: CardBox[] = [
 /* Product Discovery Kiosk — written up from the Behance case study. */
 const KIOSK: Study = {
   kicker: "UI/UX · Self-service retail kiosk · Pine Labs",
+  date: "March 2025", // TODO placeholder — real Behance publish date needed
   intro:
     "A self-service digital kiosk interface, enabling customers to browse smartphones and other devices, compare models side by side, and complete purchases directly at the kiosk.",
   facts: [
@@ -187,6 +241,7 @@ const KIOSK: Study = {
    prompts for Nayana to fill in, not claims about work already done. */
 const BOUNCE: Study = {
   kicker: "UI/UX Design · Graphic Design · Sportswear brand",
+  date: "June 2025", // TODO placeholder — real Behance publish date needed
   intro:
     "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
   facts: [
@@ -265,6 +320,11 @@ const UIUX_CARDS: CardBox[] = COLLAGE.map((c, i) => {
   return c;
 });
 
+/* and Other gets its own copy for the same reason */
+const OTHER_CARDS: CardBox[] = COLLAGE.map((c, i) =>
+  i === 0 ? { ...c, name: "Blysk Handcrafted", study: BLYSK } : c,
+);
+
 const SLIDES: Slide[] = [
   { id: "home", title: "Home", color: "#FF2E77", ink: "#000000", accent: "#FF2E77" },
   {
@@ -272,7 +332,8 @@ const SLIDES: Slide[] = [
     title: "UI/UX",
     color: "#31FF2E",
     ink: "#000000",
-    accent: "#3DC83B",
+    accent: "#31FF2E",
+    strokeColor: "#000000",
     heading: "UI/UX work",
     cards: UIUX_CARDS,
   },
@@ -282,6 +343,7 @@ const SLIDES: Slide[] = [
     color: "#FF2E2E",
     ink: "#000000",
     accent: "#FF2E2E",
+    strokeColor: "#000000",
     heading: "TouchDesigner work",
     works: [
       { name: "Project Name", blurb: "Short project description goes here." },
@@ -299,7 +361,7 @@ const SLIDES: Slide[] = [
     accent: "#FFFC2E",
     strokeColor: "#000000",
     heading: "Other work",
-    cards: COLLAGE,
+    cards: OTHER_CARDS,
   },
   {
     id: "contact",
@@ -317,23 +379,122 @@ function splitRows(items: string[]) {
   return [items.slice(0, half), items.slice(half)].filter((r) => r.length > 0);
 }
 
+/* Breakpoint shared with the @media block in globals.css — keep them equal. */
+const MOBILE = 900;
+
+/* Close glyph: two diagonals crossing on a 7x7 grid, one cell thick, drawn
+   and rendered like the chevron so the whole set stays one pixel size. */
+function PixelX() {
+  return (
+    <svg
+      viewBox="0 0 7 7"
+      width="14"
+      height="14"
+      shapeRendering="crispEdges"
+      fill="currentColor"
+    >
+      <rect x="0" y="0" width="1" height="1" />
+      <rect x="6" y="0" width="1" height="1" />
+      <rect x="1" y="1" width="1" height="1" />
+      <rect x="5" y="1" width="1" height="1" />
+      <rect x="2" y="2" width="1" height="1" />
+      <rect x="4" y="2" width="1" height="1" />
+      <rect x="3" y="3" width="1" height="1" />
+      <rect x="2" y="4" width="1" height="1" />
+      <rect x="4" y="4" width="1" height="1" />
+      <rect x="1" y="5" width="1" height="1" />
+      <rect x="5" y="5" width="1" height="1" />
+      <rect x="0" y="6" width="1" height="1" />
+      <rect x="6" y="6" width="1" height="1" />
+    </svg>
+  );
+}
+
+/* Menu glyph: three 3x3 cells in a row, rendered at 2x like the chevron and
+   the cursor art, so the dots read as pixels rather than as circles. */
+function PixelDots() {
+  return (
+    <svg
+      viewBox="0 0 11 3"
+      width="22"
+      height="6"
+      shapeRendering="crispEdges"
+      fill="currentColor"
+    >
+      <rect x="0" y="0" width="3" height="3" />
+      <rect x="4" y="0" width="3" height="3" />
+      <rect x="8" y="0" width="3" height="3" />
+    </svg>
+  );
+}
+
+/* The deck's one arrow. 1px rects on a 7x4 grid rendered at 2x, so every step
+   is two screen pixels — the same pixel size as the cursor art in /public.
+   The two diagonals meet on a single pixel, so the tip comes to a point.
+   Points down; callers rotate it. */
+function PixelChevron() {
+  return (
+    <svg
+      viewBox="0 0 7 4"
+      width="14"
+      height="8"
+      shapeRendering="crispEdges"
+      fill="currentColor"
+    >
+      <rect x="0" y="0" width="1" height="1" />
+      <rect x="6" y="0" width="1" height="1" />
+      <rect x="1" y="1" width="1" height="1" />
+      <rect x="5" y="1" width="1" height="1" />
+      <rect x="2" y="2" width="1" height="1" />
+      <rect x="4" y="2" width="1" height="1" />
+      <rect x="3" y="3" width="1" height="1" />
+    </svg>
+  );
+}
+
 export default function Page() {
   const [ribbon, setRibbon] = useState("Contact");
-  const [slideId, setSlideId] = useState("uiux");
+  const [menu, setMenu] = useState(false);
+  const [slideId, setSlideId] = useState("home");
   const [project, setProject] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  /* where the work page was left when a project was opened, and whether the
+     next view change is a back out of that project */
+  const parked = useRef(0);
+  const returning = useRef(false);
 
   /* The frame is a literal 1280x720 so every value matches Figma exactly;
-     scale it as a whole to fit the window. */
+     scale it as a whole to fit the window. Below MOBILE the deck stops being
+     a fixed canvas and becomes an ordinary scrolling document, so it is left
+     unscaled and the media query in globals.css takes over the layout. */
   useEffect(() => {
     const fit = () => {
-      const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+      const wide = window.matchMedia(`(min-width: ${MOBILE + 1}px)`).matches;
+      const s = wide
+        ? Math.min(window.innerWidth / 1280, window.innerHeight / 720)
+        : 1;
       document.documentElement.style.setProperty("--fit", String(s));
     };
     fit();
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+    };
   }, []);
+
+  /* Every view change starts at the top — the slide keeps one scroll
+     container across slides, so without this a long case study would leave
+     the next slide scrolled halfway down. The exception is backing out of a
+     case study: that returns you to the card you opened, not to the top of
+     the work page. On mobile the window scrolls instead, so move both. */
+  useEffect(() => {
+    const top = returning.current ? parked.current : 0;
+    returning.current = false;
+    scrollRef.current?.scrollTo({ top });
+    window.scrollTo({ top });
+  }, [slideId, project]);
 
   const panel = RIBBON.find((r) => r.label === ribbon);
   const slide = SLIDES.find((s) => s.id === slideId) ?? SLIDES[0];
@@ -341,10 +502,45 @@ export default function Page() {
   const accentVars = {
     "--accent": slide.accent,
     "--accent-stroke": slide.strokeColor ?? "transparent",
-    "--accent-stroke-width": slide.strokeColor ? "1px" : "0",
+    /* Doubled, because paint-order draws the stroke behind the fill — only
+       the outer half of it shows, so 2px on the glyph is a 1px outline on
+       screen. The mid and small steps are the lighter outlines for smaller
+       type — section headings at 32px, and the whole scale again on mobile,
+       where the titles themselves drop to 40 and 34. */
+    "--accent-stroke-width": slide.strokeColor ? "2px" : "0",
+    "--accent-stroke-mid": slide.strokeColor ? "1.5px" : "0",
+    "--accent-stroke-small": slide.strokeColor ? "1px" : "0",
   } as React.CSSProperties;
 
+  /* escape closes the drawer, the one control that covers the deck */
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenu(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menu]);
+
+  /* Work and case-study slides always take the full height they are given,
+     so TouchDesigner, UI/UX and Other are the same box on mobile whatever
+     their content adds up to. Home and contact keep the 4:3 floor instead
+     and centre their copy in it. */
+  const full = Boolean(slide.cards || slide.works);
+
+  const openProject = (i: number) => {
+    parked.current = scrollRef.current?.scrollTop ?? 0;
+    setProject(i);
+  };
+
+  const closeProject = () => {
+    returning.current = true;
+    setProject(null);
+  };
+
   const goto = (id: string) => {
+    /* picking a different slide is not a back — that one starts at the top */
+    returning.current = false;
     setSlideId(id);
     setProject(null);
   };
@@ -353,6 +549,18 @@ export default function Page() {
     <div className="frame">
       {/* ---------- header ---------- */}
       <header className="header">
+        {/* mobile only — the ribbon below is hidden there and this opens it
+            as a drawer instead */}
+        <button
+          type="button"
+          className="header__dots"
+          aria-label="Menu"
+          aria-expanded={menu}
+          onClick={() => setMenu(true)}
+        >
+          <PixelDots />
+        </button>
+
         <nav className="header__tabs" aria-label="Utility">
           {RIBBON.map((tab) => (
             <button
@@ -383,10 +591,64 @@ export default function Page() {
         </div>
       </header>
 
+      {/* ---------- mobile drawer ---------- */}
+      {/* Same `ribbon` state as the desktop ribbon, so opening one section
+          closes whichever was open — the accordion falls out of that rather
+          than needing its own bookkeeping. */}
+      <div
+        className={menu ? "drawer__scrim is-open" : "drawer__scrim"}
+        onClick={() => setMenu(false)}
+        aria-hidden="true"
+      />
+      <aside className={menu ? "drawer is-open" : "drawer"} aria-label="Menu">
+        <button
+          type="button"
+          className="drawer__close"
+          aria-label="Close menu"
+          onClick={() => setMenu(false)}
+        >
+          <PixelX />
+        </button>
+        <ul className="drawer__list">
+          {RIBBON.map((tab) => {
+            const open = ribbon === tab.label;
+            return (
+              <li key={tab.label} className={open ? "drawer__item is-open" : "drawer__item"}>
+                <button
+                  type="button"
+                  className="drawer__tab"
+                  aria-expanded={open}
+                  onClick={() => setRibbon(open ? "" : tab.label)}
+                >
+                  <span className="drawer__label">{tab.label}</span>
+                  {/* runs from the label to the right edge, the way the
+                      desktop ribbon's rule runs off the last tab */}
+                  <span className="drawer__rule" aria-hidden="true" />
+                </button>
+                {/* always rendered — a conditional one cannot slide */}
+                <div className="drawer__panel">
+                  <div className="drawer__panelInner">
+                    {tab.items.map((item) => (
+                      <p key={item} className="drawer__row">
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </aside>
+
       {/* ---------- body ---------- */}
       <div className="body">
         {/* slide overview rail = primary nav */}
         <nav className="rail" aria-label="Slides">
+          {/* mobile only — the strip swipes sideways, and nothing else says so */}
+          <span className="rail__cue rail__cue--start" aria-hidden="true">
+            <PixelChevron />
+          </span>
           <div className="rail__list">
             {SLIDES.map((s, i) => (
               <div key={s.id} className="rail__item">
@@ -403,24 +665,40 @@ export default function Page() {
               </div>
             ))}
           </div>
+          <span className="rail__cue rail__cue--end" aria-hidden="true">
+            <PixelChevron />
+          </span>
         </nav>
 
         {/* the slide */}
         <main className="stage">
-          <article className="slide" style={accentVars}>
+          {/* sits in the grey, above the slide rather than inside it, so it
+              stays put however far down a case study you scroll */}
+          {project !== null && slide.cards && (
+            <button
+              type="button"
+              className="detail__back stage__back"
+              onClick={closeProject}
+            >
+              ← back
+            </button>
+          )}
+          <article
+            className={full ? "slide slide--full" : "slide"}
+            style={accentVars}
+          >
             <div className="slide__scroll" ref={scrollRef}>
               {project !== null && slide.cards ? (
                 <ProjectDetail
                   name={slide.cards[project]?.name ?? "project"}
                   index={project}
                   study={slide.cards[project]?.study}
-                  onBack={() => setProject(null)}
                 />
               ) : slide.cards ? (
                 <CollageSlide
                   heading={slide.heading ?? slide.title}
                   cards={slide.cards}
-                  onOpen={setProject}
+                  onOpen={openProject}
                 />
               ) : slide.works ? (
                 <ReelSlide
@@ -446,8 +724,9 @@ export default function Page() {
                   body={
                     <>
                       Hi! i am <span className="accent">NAYANA</span>, a
-                      multidisciplinary designer that loves experimenting with all
-                      things creative. Welcome to my gallery of work.
+                      multidisciplinary designer that loves creating and
+                      experimenting with all things creative. Welcome to my
+                      gallery of work.
                     </>
                   }
                 />
@@ -510,21 +789,25 @@ function ReelSlide({ heading, works }: { heading: string; works: Work[] }) {
           const isOpen = open === i;
           return (
             <li key={i} className={isOpen ? "reel__row is-open" : "reel__row"}>
-              {/* click opens rather than toggles, so a tap (touch, where there
-                  is no hover) and a click on an already-open row both land on
-                  the same state instead of fighting the pointer */}
+              {/* click toggles: opening one row closes the others, and
+                  clicking the open row shuts it again. Same gesture on touch
+                  and pointer, and Enter/Space on the focused button lands on
+                  it too. */}
               <button
                 type="button"
                 className="reel"
                 aria-expanded={isOpen}
-                onMouseEnter={() => setOpen(i)}
-                onMouseLeave={() => setOpen(null)}
-                onFocus={() => setOpen(i)}
-                onBlur={() => setOpen(null)}
-                onClick={() => setOpen(i)}
+                onClick={() => setOpen(isOpen ? null : i)}
               >
                 <span className="reel__text">
-                  <span className="reel__name">{w.name}</span>
+                  <span className="reel__head">
+                    {/* points down closed, up open — decorative, since
+                        aria-expanded already carries the state */}
+                    <span className="reel__arrow" aria-hidden="true">
+                      <PixelChevron />
+                    </span>
+                    <span className="reel__name">{w.name}</span>
+                  </span>
                   {w.blurb ? (
                     <span className="reel__blurb">
                       <span className="reel__blurbText">{w.blurb}</span>
@@ -715,25 +998,25 @@ function SlideScrollbar({
   );
 }
 
+/* No back button here — it lives in the slide's own bar, outside the scroll
+   container, so it stays reachable however far down a case study you are. */
 function ProjectDetail({
   name,
   index,
   study,
-  onBack,
 }: {
   name: string;
   index: number;
   study?: Study;
-  onBack: () => void;
 }) {
   return (
     <div className="detail">
-      <button type="button" className="detail__back" onClick={onBack}>
-        ← back
-      </button>
-      <h1 className="detail__title">
-        ({index + 1}) {name}
-      </h1>
+      <div className="detail__head">
+        <h1 className="detail__title">
+          ({index + 1}) {name}
+        </h1>
+        {study?.date && <p className="detail__date">{study.date}</p>}
+      </div>
       {study && <CaseStudy study={study} />}
     </div>
   );

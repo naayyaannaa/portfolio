@@ -93,12 +93,15 @@ button:disabled,
   position: relative;
 }
 
-/* divider matches the content: 24 both sides */
+/* Starts at 24 with the content, but runs all the way to the scrollbar's
+   left edge (17 = the scrollbar's width) rather than stopping symmetrically
+   at 24 — the divider and the scrollbar meet, so the header closes off
+   cleanly instead of leaving a 7px notch between the two. */
 .header::after {
   content: "";
   position: absolute;
   left: 24px;
-  right: 24px;
+  right: 17px;
   bottom: 0;
   height: 1px;
   background: var(--line);
@@ -109,6 +112,14 @@ button:disabled,
   width: 100%;
   align-items: flex-end;
   gap: 12px;
+}
+
+/* The mobile menu — hidden on the desktop deck, where the ribbon itself is
+   the menu. Kept in the DOM at every width so the drawer can animate. */
+.header__dots,
+.drawer,
+.drawer__scrim {
+  display: none;
 }
 
 .tab {
@@ -173,6 +184,130 @@ button:disabled,
   text-align: right;
 }
 
+/* ---- slide-out menu (mobile) ---- */
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(82vw, 320px);
+  padding: 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--paper);
+  border-right: 1px solid var(--ink);
+  transform: translateX(-100%);
+  transition: transform 0.35s ease;
+}
+
+.drawer.is-open {
+  transform: translateX(0);
+}
+
+.drawer__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.drawer__scrim.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer__close {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 2px;
+  display: flex;
+  color: var(--ink);
+}
+
+.drawer__close:focus-visible {
+  outline: none;
+  color: var(--pink);
+}
+
+.drawer__list {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.drawer__tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  width: 100%;
+  padding: 16px 0;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1.2;
+  text-align: left;
+  color: var(--ink);
+  display: flex;
+  /* the rule sits on the label's baseline, like the ribbon's does */
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.drawer__tab:focus-visible {
+  outline: none;
+  color: var(--pink);
+}
+
+.drawer__label {
+  flex-shrink: 0;
+}
+
+/* fills whatever is left of the row, so the rule sits beside the label
+   rather than under it */
+.drawer__rule {
+  flex: 1;
+  height: 1px;
+  background: var(--ink);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.drawer__item.is-open .drawer__rule {
+  opacity: 1;
+}
+
+/* 0fr -> 1fr is what lets a box of unknown height slide open */
+.drawer__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.drawer__item.is-open .drawer__panel {
+  grid-template-rows: 1fr;
+}
+
+.drawer__panelInner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.drawer__row {
+  margin: 12px 0 0;
+  padding-bottom: 6px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
 /* ------------------------------------------------------------------ */
 /*  Body — 611px row                                                   */
 /* ------------------------------------------------------------------ */
@@ -200,6 +335,12 @@ button:disabled,
   flex-shrink: 0;
   align-self: stretch;
   background: var(--paper);
+}
+
+/* Swipe cues for the mobile rail strip. The desktop rail is a vertical list
+   with a real scrollbar, so they only appear below the breakpoint. */
+.rail__cue {
+  display: none;
 }
 
 /* 166px content box = 150 thumb + 8 gutter + 8 scrollbar, so the bar lands
@@ -282,8 +423,14 @@ button:disabled,
 
 .stage {
   display: flex;
-  padding: 24px 30px 48px
+  /* top padding carries the back button, which is absolutely placed in it —
+     see .stage__back. The slide keeps its full height either way. */
+  position: relative;
+  padding: 46px 30px 48px
     30px;
+  /* a flex item defaults to min-width: auto, which lets over-wide slide
+     content push the stage — and with it the scrollbar — past the frame */
+  min-width: 0;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -359,12 +506,22 @@ a.accent:hover {
 
 /* ------------------------------------------------------------------ */
 /*  Project pages — UI/UX, TouchDesigner, Other                        */
-/*  Content box is 976 x 820: 1024 slide interior - 24 padding each    */
-/*  side. 820 > the slide's height, so the slide scrolls.              */
+/*  The 24px gutter is the literal Figma value and matches the header's;    */
+/*  the width follows from it rather than being hardcoded, because the      */
+/*  slide interior is 1007 (1280 - 194 rail - 17 scrollbar - 60 stage       */
+/*  padding - 2 border), not the 1024 an earlier pass assumed. Pinning      */
+/*  976 + 48 made these pages 17px wider than the home slide and dragged    */
+/*  the scrollbar off the right of the frame.                               */
+/*  820 > the slide's height, so the slide scrolls.                         */
 /* ------------------------------------------------------------------ */
 
 .work {
-  width: 976px;
+  /* One gap under the section heading, shared by the reel and the collage so
+     TouchDesigner, UI/UX and Other all breathe the same. The deck's own card
+     coordinates already sit 60 below the heading, so the collage only takes
+     the difference — see .work__slot. */
+  --work-gap: 96px;
+  --work-gap-deck: 60px;
   height: 820px;
   margin: 0 24px;
   padding: 24px 0;
@@ -386,17 +543,22 @@ a.accent:hover {
   color: var(--accent, var(--pink));
   -webkit-text-stroke-width: var(--accent-stroke-width, 0);
   -webkit-text-stroke-color: var(--accent-stroke, transparent);
+  /* stroke behind the fill, so the outline sits outside the letterform
+     instead of straddling its edge and eating into the colour */
+  paint-order: stroke fill;
+
 }
 
 /* ---- reel layout: ruled rows, flush right in the 976 content box ---- */
 
-/* the rows set the height, so this one hugs rather than holding 820 */
+/* same box as the collage slides, so TouchDesigner scrolls the same length
+   as UI/UX and Other rather than hugging its rows */
 .work--reel {
-  height: auto;
+  height: calc(976px + var(--work-gap) - var(--work-gap-deck));
 }
 
 .work__reel {
-  margin: 60px 0 0;
+  margin: var(--work-gap) 0 0;
   padding: 0;
   list-style: none;
   display: flex;
@@ -450,22 +612,57 @@ a.accent:hover {
   align-self: stretch;
 }
 
-/* matches .card__name on the collage slides, so project names read the same
-   on the reel as they do on UI/UX */
+/* the anchor the arrow hangs off — it is the name's own box, so the arrow
+   tracks the name as the row opens and carries it up */
+.reel__head {
+  position: relative;
+}
+
+/* Hung off the left of the name and clear of the button's box, so it sits
+   outside the rule instead of inside the ruled row.
+   Down closed, up open — a half turn on the same curve and duration as the
+   row itself, so the flip reads as the row opening rather than as its own
+   little animation. 180deg keeps the pixel grid square-on, so the chevron
+   stays crisp the whole way round. */
+.reel__arrow {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  display: flex;
+  color: #000;
+  transform: translateY(-50%);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* no smoothing on the steps — this is what keeps it reading as pixel art
+   next to the notched type and the pixel cursors */
+.reel__arrow svg {
+  display: block;
+  shape-rendering: crispEdges;
+  image-rendering: pixelated;
+}
+
+/* black at rest, the slide's red once the row is open — the colour is the
+   state, so nothing happens on hover */
+.is-open .reel__arrow {
+  color: var(--accent, var(--pink));
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* set in the deck's own face, matching .work__title rather than the Arial
+   the collage cards use */
 .reel__name {
   color: #000;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 200;
   line-height: 1.2;
 }
 
 /* Takes no height when closed, then swallows every spare pixel of the row as
-   it opens — that is what carries the name up to the top. Growing the flex
-   rather than the text's own height is what makes the name land at the top
-   instead of just clearing the description. align-content keeps the text
-   itself on the rule the whole way. visibility keeps it out of the
-   accessibility tree and out of text selection until the row is open. */
+   it opens — that is what carries the name up to the top. visibility keeps
+   the copy out of the accessibility tree and out of text selection until the
+   row is open. */
 .reel__blurb {
   display: grid;
   align-content: end;
@@ -549,7 +746,9 @@ a.accent:hover {
 @media (prefers-reduced-motion: reduce) {
   .reel,
   .reel__cover,
-  .reel__blurb {
+  .reel__blurb,
+  .reel__media,
+  .reel__arrow {
     transition-duration: 0.01ms;
   }
 }
@@ -557,7 +756,7 @@ a.accent:hover {
 /* ---- collage layout: cards placed and sized individually ---- */
 
 .work--collage {
-  height: 976px;
+  height: calc(976px + var(--work-gap) - var(--work-gap-deck));
   position: relative;
 }
 
@@ -567,8 +766,11 @@ a.accent:hover {
   list-style: none;
 }
 
+/* margin shifts an absolutely positioned box, which padding on the container
+   would not — this is what carries the extra heading gap into the collage */
 .work__slot {
   position: absolute;
+  margin-top: calc(var(--work-gap) - var(--work-gap-deck));
 }
 
 /* card: 279 wide, column, centred, 8px gap */
@@ -613,8 +815,8 @@ a.accent:hover {
 }
 
 /* project detail view — same 976 content box as .work */
+/* same gutter, same reasoning as .work above */
 .detail {
-  width: 976px;
   margin: 0 24px;
   padding: 24px 0;
 }
@@ -632,21 +834,49 @@ a.accent:hover {
   border-bottom: 1px solid transparent;
 }
 
+/* Lives in the stage's top padding, aligned to the slide's left edge — out
+   of the scrolling document entirely, so it never scrolls away. */
+.stage__back {
+  position: absolute;
+  top: 16px;
+  left: 30px;
+}
+
 .detail__back:hover,
 .detail__back:focus-visible {
   border-bottom-color: var(--ink);
   outline: none;
 }
+/* title and date share a baseline, so the date reads as part of the heading
+   rather than as the first line of the body */
+.detail__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+}
+
+.detail__date {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 300;
+  color: #5d5d5d;
+}
 
 .detail__title {
-  margin: 24px 0 0;
-  font-size: 64px;
+  margin: 0;
+  font-size: 48px;
   font-weight: 300;
   line-height: normal;
   letter-spacing: -0.64px;
   color: var(--accent, var(--pink));
   -webkit-text-stroke-width: var(--accent-stroke-width, 0);
   -webkit-text-stroke-color: var(--accent-stroke, transparent);
+  /* stroke behind the fill, so the outline sits outside the letterform
+     instead of straddling its edge and eating into the colour */
+  paint-order: stroke fill;
+
 }
 
 /* ------------------------------------------------------------------ */
@@ -671,7 +901,7 @@ a.accent:hover {
 .study__intro {
   margin: 32px 0 0;
   max-width: 720px;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 200;
   line-height: 1.27;
   color: var(--ink);
@@ -717,18 +947,21 @@ a.accent:hover {
   border-top: 1px solid var(--line);
 }
 
+/* The one set of headings that stays out of the accent scheme: solid black,
+   no stroke, so the facts block reads as plain label/value against the
+   coloured section headings below it. */
 .study__label {
   margin: 0;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 300;
   line-height: 1.2;
   letter-spacing: -0.28px;
-  color: var(--accent, var(--pink));
+  color: var(--ink);
 }
 
 .study__value {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 200;
   line-height: 1.4;
   color: var(--ink);
@@ -742,6 +975,8 @@ a.accent:hover {
 
 /* the heading carries no bottom margin — each following block sets its own
    top margin, so sections with different contents still space evenly */
+/* same 1px black stroke the slide titles carry, fed by the slide's
+   --accent-stroke, so the coloured section headings are outlined too */
 .study__heading {
   margin: 0;
   display: flex;
@@ -752,6 +987,12 @@ a.accent:hover {
   line-height: 1.2;
   letter-spacing: -0.32px;
   color: var(--accent, var(--pink));
+  -webkit-text-stroke-width: var(--accent-stroke-mid, 0);
+  -webkit-text-stroke-color: var(--accent-stroke, transparent);
+  /* stroke behind the fill, so the outline sits outside the letterform
+     instead of straddling its edge and eating into the colour */
+  paint-order: stroke fill;
+
 }
 
 /* marks a section that still needs writing */
@@ -774,7 +1015,7 @@ a.accent:hover {
 
 .study__lead {
   margin: 16px 0 0;
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 200;
   line-height: 1.27;
   color: var(--ink);
@@ -790,7 +1031,7 @@ a.accent:hover {
   margin: 8px 0 0;
   max-width: 720px;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
   color: var(--ink);
@@ -912,4 +1153,526 @@ a.accent:hover {
 }
 .slide__scroll::-webkit-scrollbar {
   display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Mobile — below 900 the deck stops pretending to be a 1280x720       */
+/*  slide canvas and becomes an ordinary scrolling document.            */
+/*                                                                      */
+/*  Nothing about the theme changes: same paper, same accents, same     */
+/*  notched face, same 1px rules and empty bordered slots. What goes    */
+/*  is the fixed geometry — the scaled frame, the side rail, the        */
+/*  stepper scrollbar and the hand-placed collage — because all four    */
+/*  are desktop-canvas devices that have no meaning on a phone.         */
+/*  Keep the breakpoint in step with MOBILE in app/page.tsx.            */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  /* Still a fixed viewport, just stacked instead of scaled: header pinned at
+     the top, slide picker pinned at the bottom, and only the slide in between
+     scrolls — the same contract as desktop. */
+  body {
+    display: block;
+    place-items: initial;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* the pixel cursors are a pointer affordance; on touch they only get in
+     the way of the tap highlight */
+  body,
+  a,
+  button,
+  [role="button"] {
+    cursor: auto;
+  }
+
+  .frame {
+    width: 100%;
+    height: 100dvh;
+    aspect-ratio: auto;
+    transform: none;
+  }
+
+  /* ---- header: an empty white bar with the menu glyph in it ---- */
+
+  .header {
+    height: auto;
+    flex-shrink: 0;
+    padding: 18px 20px;
+    gap: 0;
+  }
+
+  /* full bleed rather than inset to the content gutter */
+  .header::after {
+    left: 0;
+    right: 0;
+  }
+
+  /* the ribbon and its panel move wholesale into the drawer */
+  .header__tabs,
+  .header__meta {
+    display: none;
+  }
+
+  .header__dots {
+    appearance: none;
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    display: block;
+    color: var(--ink);
+  }
+
+  .drawer,
+  .drawer__scrim {
+    display: block;
+  }
+
+  /* ---- body stacks: slide above, picker pinned underneath ---- */
+
+  .body {
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+  }
+
+  /* order puts the rail below the stage without moving it in the DOM, where
+     it is still the first landmark after the header */
+  .stage {
+    order: 1;
+  }
+
+  .rail {
+    order: 2;
+  }
+
+  /* the vertical rail becomes a horizontal strip you swipe through */
+  .rail {
+    width: 100%;
+    flex-shrink: 0;
+    padding: 10px 0;
+    align-self: auto;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  /* pixel chevrons either side, so the strip reads as swipeable */
+  .rail__cue {
+    display: flex;
+    flex-shrink: 0;
+    width: 20px;
+    justify-content: center;
+    color: #5d5d5d;
+  }
+
+  .rail__cue--start {
+    transform: rotate(90deg);
+  }
+
+  .rail__cue--end {
+    transform: rotate(-90deg);
+  }
+
+  /* overflow-y: hidden here clipped the slide number sitting under each
+     thumbnail — the x axis is the only one that needs to scroll */
+  .rail__list {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    max-height: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .rail__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* number tucks under its thumbnail rather than sitting in a gutter */
+  .rail__item {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .rail__num {
+    width: auto;
+    text-align: left;
+  }
+
+  .thumb {
+    width: 132px;
+    height: 82px;
+    padding: 8px;
+    font-size: 25px;
+  }
+
+  /* ---- stage: centres the slide in what is left between header and rail ---- */
+
+  .stage {
+    flex: 1;
+    min-height: 0;
+    padding: 40px 16px 16px;
+    align-self: auto;
+  }
+
+  /* the stage does not scroll, so this stays put on its own */
+  .stage__back {
+    top: 12px;
+    left: 16px;
+  }
+
+  /* A 4:3 box is the floor, not the ceiling: home and contact settle at that
+     ratio, and a slide with more in it grows until it runs out of stage and
+     starts scrolling instead. 32px is the stage's two 16px gutters. */
+  .slide {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc((100vw - 32px) * 0.75);
+    max-height: 100%;
+  }
+
+  /* The work pages take the whole stage rather than settling at their own
+     content height — otherwise a short deck like the reel ends up a slightly
+     shorter box than the collage pages sitting next to it in the rail. */
+  .slide--full {
+    height: 100%;
+  }
+
+  .slide__scroll {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  /* auto margins centre the content when the slide has room to spare and
+     collapse to zero when it does not — unlike justify-content, which would
+     clip the top of anything that overflows */
+  .slide__scroll > * {
+    margin-block: auto;
+  }
+
+  /* a stepper bar is a pointer device; touch scrolls the slide directly */
+  .scrollbar {
+    display: none;
+  }
+
+  /* ---- home / contact ---- */
+
+  .split {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    min-height: 0;
+    padding: 32px 20px;
+  }
+
+  .split__title {
+    font-size: 40px;
+    line-height: 1.15;
+  }
+
+  /* flush right, matching the header panel above it */
+  .split__body {
+    font-size: 18px;
+    text-align: right;
+  }
+
+  /* ---- work pages ---- */
+
+  .work {
+    --work-gap: 48px;
+    height: auto;
+    margin: 0 20px;
+    padding: 20px 0 8px;
+  }
+
+  .work__title {
+    font-size: 40px;
+    letter-spacing: -0.4px;
+  }
+
+  /* the outline is half the stroke; at 40px it needs to come down with it */
+  .work__title,
+  .detail__title {
+    -webkit-text-stroke-width: var(--accent-stroke-mid, 0);
+  }
+
+  /* ---- collage: hand-placed boxes become one column ---- */
+
+  /* left/top/width and the media height are inline styles measured off the
+     deck, so they have to be overridden rather than replaced */
+  .work--collage {
+    height: auto;
+  }
+
+  .work__collage {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-top: var(--work-gap);
+  }
+
+  .work__slot {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    /* the cards are in normal flow here, so the deck offset would just add
+       a gap between every one of them */
+    margin-top: 0;
+  }
+
+  .card__media {
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+  }
+
+  .card__name {
+    font-size: 15px;
+  }
+
+  /* ---- reel ---- */
+
+  /* the left inset is the gutter the arrow hangs in, so it sits outside the
+     row's rule here exactly as it does on desktop */
+  .work__reel {
+    align-items: stretch;
+    gap: 28px;
+    margin-top: var(--work-gap);
+    padding-left: 26px;
+  }
+
+  .reel {
+    width: 100%;
+  }
+
+  /* Open height is the stack measured off the row's own width: the row is
+     the viewport less the stage gutters, work margins and slide border, the
+     video is 9/16 of that, and 80 covers the name, the blurb and the air
+     between them. There is no room to inset the block on a phone, so open it
+     runs the full width. */
+  .reel__row {
+    --frame-closed: 76px;
+    --frame-open: calc((100vw - 74px) * 0.5625 + 80px);
+    --media-closed: 180px;
+    --media-open: 100%;
+    --text-open: 46px;
+  }
+
+  /* Mobile only: opening slides the block out of the right-hand corner into
+     the centre of the row and enlarges it from the closed crop to a full
+     16:9 frame, with the name riding up and the description opening under
+     it. Positioned rather than laid out, so the move is a real eased slide
+     instead of a reflow. The desktop rows are untouched — they still grow
+     the block in place off the rule. */
+  .reel {
+    position: relative;
+    align-items: flex-start;
+  }
+
+  /* as tall as the row while shut, so the name lands on the rule; shrinking
+     it is what carries the name to the top */
+  .reel__text {
+    flex: 1 1 auto;
+    align-self: auto;
+    height: var(--frame-closed);
+    transition: height 0.5s ease;
+  }
+
+  .is-open .reel__text {
+    height: var(--text-open);
+  }
+
+  /* the row no longer has spare height for it to swallow, so it opens to its
+     own content height instead */
+  .reel__blurb {
+    display: grid;
+    grid-template-rows: 0fr;
+    align-content: stretch;
+    flex: 0 0 auto;
+    width: 100%;
+    transition:
+      grid-template-rows 0.5s ease,
+      opacity 0.5s ease,
+      visibility 0s linear 0.5s;
+  }
+
+  .is-open .reel__blurb {
+    grid-template-rows: 1fr;
+    flex-grow: 0;
+    transition:
+      grid-template-rows 0.5s ease,
+      opacity 0.5s ease,
+      visibility 0s;
+  }
+
+  .reel__blurbText {
+    min-height: 0;
+    margin-top: 4px;
+  }
+
+  .reel__side {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    flex: none;
+    width: var(--media-closed);
+    align-self: auto;
+    transition:
+      right 0.5s ease,
+      width 0.5s ease,
+      transform 0.5s ease;
+  }
+
+  .is-open .reel__side {
+    right: 50%;
+    width: var(--media-open);
+    transform: translateX(50%);
+  }
+
+  /* aspect-ratio rather than a height, so the frame never has to know how
+     wide the row happens to be */
+  .reel__media {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 338 / 89;
+    transition: aspect-ratio 0.5s ease;
+  }
+
+  .is-open .reel__media {
+    aspect-ratio: 16 / 9;
+  }
+
+  .reel__name {
+    font-size: 17px;
+  }
+
+  .reel__blurbText {
+    font-size: 13px;
+  }
+
+
+
+  /* ---- project detail ---- */
+
+  .detail {
+    margin: 0 20px;
+    padding: 20px 0 8px;
+  }
+
+  .detail__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .detail__title {
+    font-size: 34px;
+    letter-spacing: -0.34px;
+  }
+
+  .detail__date {
+    font-size: 14px;
+  }
+
+  .study__kicker {
+    font-size: 14px;
+  }
+
+  .study__intro {
+    margin-top: 24px;
+    font-size: 18px;
+  }
+
+  .study__facts {
+    margin-top: 36px;
+  }
+
+  /* label over value instead of beside it */
+  .study__fact {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 18px 0;
+  }
+
+  .study__label {
+    font-size: 20px;
+  }
+
+  .study__section {
+    margin-top: 48px;
+  }
+
+  .study__heading {
+    font-size: 24px;
+    letter-spacing: -0.24px;
+    -webkit-text-stroke-width: var(--accent-stroke-small, 0);
+  }
+
+  .study__lead {
+    font-size: 18px;
+  }
+
+  .study__journey,
+  .study__row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px 16px;
+  }
+
+  .study__stepName,
+  .study__groupName {
+    font-size: 17px;
+  }
+
+  .shot--hero {
+    margin-top: 28px;
+    height: 220px;
+  }
+
+  .shot--wide {
+    margin-top: 20px;
+    height: 190px;
+  }
+}
+
+/* ---- phones proper: one column everywhere ---- */
+
+@media (max-width: 560px) {
+  .split__title {
+    font-size: 34px;
+  }
+
+  .work__title {
+    font-size: 32px;
+  }
+
+  .detail__title {
+    font-size: 28px;
+  }
+
+  .study__journey,
+  .study__row {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .shot--hero {
+    height: 180px;
+  }
+
+  .shot--wide {
+    height: 160px;
+  }
+
+  /* the closed block stops competing with the name for the row */
+  .reel__row {
+    --frame-closed: 72px;
+    --media-closed: 130px;
+  }
 }
