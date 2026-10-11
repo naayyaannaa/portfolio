@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Ribbon — the "File / Home / Edit" strip                            */
@@ -410,6 +410,45 @@ function PixelX() {
   );
 }
 
+/* Expand and minimize: a pair of diagonal arrows on a 9x9 grid, rendered at
+   2x like the rest of the pixel art. Each arrow is a corner — its two arms
+   and the diagonal that runs into it. Expanded, the corners sit in the
+   glyph's own corners and point out; minimized, they sit by the middle and
+   point in. */
+const ARROWS_OUT = [
+  ...[4, 5, 6, 7, 8].map((i) => [i, 0]),
+  ...[1, 2, 3, 4].map((i) => [8, i]),
+  [7, 1], [6, 2], [5, 3],
+  ...[0, 1, 2, 3, 4].map((i) => [i, 8]),
+  ...[4, 5, 6, 7].map((i) => [0, i]),
+  [1, 7], [2, 6], [3, 5],
+];
+const ARROWS_IN = [
+  ...[5, 6, 7, 8].map((i) => [i, 3]),
+  ...[0, 1, 2].map((i) => [5, i]),
+  [6, 2], [7, 1], [8, 0],
+  ...[0, 1, 2, 3].map((i) => [i, 5]),
+  ...[6, 7, 8].map((i) => [3, i]),
+  [2, 6], [1, 7], [0, 8],
+];
+
+function PixelArrows({ inward }: { inward?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 9 9"
+      width="18"
+      height="18"
+      shapeRendering="crispEdges"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      {(inward ? ARROWS_IN : ARROWS_OUT).map(([x, y]) => (
+        <rect key={`${x},${y}`} x={x} y={y} width="1" height="1" />
+      ))}
+    </svg>
+  );
+}
+
 /* Menu glyph: three 3x3 cells in a row, rendered at 2x like the chevron and
    the cursor art, so the dots read as pixels rather than as circles. */
 function PixelDots() {
@@ -452,11 +491,21 @@ function PixelChevron() {
   );
 }
 
+/* the expand / minimize resize — same pace as the drawer */
+const RESIZE: KeyframeAnimationOptions = { duration: 350, easing: "ease" };
+
 export default function Page() {
   const [ribbon, setRibbon] = useState("Contact");
   const [menu, setMenu] = useState(false);
   const [slideId, setSlideId] = useState("home");
   const [project, setProject] = useState<number | null>(null);
+  /* a case study blown up to fill the window — see .is-expanded */
+  const [expanded, setExpanded] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+  /* where the slide and its scrollbar sat before expanding, in design px
+     relative to the frame — what the animation grows from and shrinks to */
+  const homes = useRef<{ el: HTMLElement; box: Keyframe }[]>([]);
+  const shrinking = useRef<Animation[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   /* where the work page was left when a project was opened, and whether the
      next view change is a back out of that project */
@@ -522,6 +571,68 @@ export default function Page() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menu]);
 
+  const expand = () => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const f = frame.getBoundingClientRect();
+    /* the frame is transform-scaled, so convert screen px back to design px */
+    const fit = f.width / frame.offsetWidth || 1;
+    homes.current = Array.from(
+      frame.querySelectorAll<HTMLElement>(".slide, .scrollbar"),
+    ).map((el) => {
+      const r = el.getBoundingClientRect();
+      return {
+        el,
+        box: {
+          top: `${(r.top - f.top) / fit}px`,
+          left: `${(r.left - f.left) / fit}px`,
+          width: `${r.width / fit}px`,
+          height: `${r.height / fit}px`,
+        },
+      };
+    });
+    setExpanded(true);
+  };
+
+  /* Shrinks back to where it came from first, and only then drops the
+     expanded layout — the fill holds the last frame until React has. */
+  const minimize = useCallback(() => {
+    if (shrinking.current.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setExpanded(false);
+      return;
+    }
+    shrinking.current = homes.current.map(({ el, box }) =>
+      el.animate([{ ...box, offset: 1 }], { ...RESIZE, fill: "forwards" }),
+    );
+    Promise.all(shrinking.current.map((a) => a.finished)).then(
+      () => setExpanded(false),
+      () => {},
+    );
+  }, []);
+
+  /* Runs before paint, so the slide is never seen at full size before it
+     has grown there, nor left holding its shrunk fill once it is home. */
+  useLayoutEffect(() => {
+    shrinking.current.forEach((a) => a.cancel());
+    shrinking.current = [];
+    if (!expanded) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    homes.current.forEach(({ el, box }) =>
+      el.animate([{ ...box, offset: 0 }], RESIZE),
+    );
+  }, [expanded]);
+
+  /* escape also minimizes an expanded case study */
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") minimize();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded, minimize]);
+
   /* Work and case-study slides always take the full height they are given,
      so TouchDesigner, UI/UX and Other are the same box on mobile whatever
      their content adds up to. Home and contact keep the 4:3 floor instead
@@ -536,6 +647,7 @@ export default function Page() {
   const closeProject = () => {
     returning.current = true;
     setProject(null);
+    setExpanded(false);
   };
 
   const goto = (id: string) => {
@@ -543,10 +655,11 @@ export default function Page() {
     returning.current = false;
     setSlideId(id);
     setProject(null);
+    setExpanded(false);
   };
 
   return (
-    <div className="frame">
+    <div className={expanded ? "frame is-expanded" : "frame"} ref={frameRef}>
       {/* ---------- header ---------- */}
       <header className="header">
         {/* mobile only — the ribbon below is hidden there and this opens it
@@ -683,10 +796,35 @@ export default function Page() {
               ← back
             </button>
           )}
+          {/* case studies only — across the bar from the back button */}
+          {project !== null && slide.cards && (
+            <button
+              type="button"
+              className="iconbtn stage__expand"
+              aria-label="Expand"
+              onClick={expand}
+            >
+              <PixelArrows />
+            </button>
+          )}
           <article
             className={full ? "slide slide--full" : "slide"}
             style={accentVars}
           >
+            {/* outside the scroll container, like the back button, so it
+                stays in the corner however far down you are */}
+            {expanded && (
+              <div className="slide__bar">
+                <button
+                  type="button"
+                  className="iconbtn"
+                  aria-label="Minimize"
+                  onClick={minimize}
+                >
+                  <PixelArrows inward />
+                </button>
+              </div>
+            )}
             <div className="slide__scroll" ref={scrollRef}>
               {project !== null && slide.cards ? (
                 <ProjectDetail

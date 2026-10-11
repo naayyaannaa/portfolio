@@ -842,6 +842,78 @@ a.accent:hover {
   left: 30px;
 }
 
+/* the back button's opposite number, at the slide's right edge */
+.stage__expand {
+  position: absolute;
+  top: 16px;
+  right: 30px;
+}
+
+/* ---- expanded case study ----
+   The slide alone grows to fill the browser window. Fixed positioning is
+   relative to the frame here, not the viewport, because the frame is
+   transformed — so the window's size is converted back into design px by
+   dividing by --fit, and the box is centred on the frame, which is itself
+   centred in the window. The stepper scrollbar comes along, pinned to the
+   window's right edge, and the slide gives up its 17px for it.
+   The two together carry one black border round the whole window: the slide
+   keeps its own on three sides, the scrollbar closes the other three.
+   Growing and shrinking is animated from app/page.tsx, which is why these
+   are plain top/left/width/height rather than a transform. */
+.is-expanded .slide {
+  position: fixed;
+  z-index: 10;
+  top: calc(50% - 50vh / var(--fit));
+  left: calc(50% - 50vw / var(--fit));
+  width: calc(100vw / var(--fit) - 17px);
+  height: calc(100vh / var(--fit));
+  display: flex;
+  flex-direction: column;
+  border-right: 0;
+}
+
+.is-expanded .slide__scroll {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.is-expanded .scrollbar {
+  position: fixed;
+  z-index: 10;
+  top: calc(50% - 50vh / var(--fit));
+  left: calc(50% + 50vw / var(--fit) - 17px);
+  height: calc(100vh / var(--fit));
+  border-top: 1px solid var(--ink);
+  border-right: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+/* expand and minimize — bare pixel glyphs, no label */
+.iconbtn {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  display: flex;
+  color: var(--ink);
+  cursor: var(--cursor-hand);
+}
+
+.iconbtn:hover,
+.iconbtn:focus-visible {
+  outline: none;
+  color: var(--pink);
+}
+
+/* holds the minimize button in the expanded slide's top right corner */
+.slide__bar {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 16px 24px 0;
+}
+
 .detail__back:hover,
 .detail__back:focus-visible {
   border-bottom-color: var(--ink);
@@ -1325,6 +1397,22 @@ a.accent:hover {
   .stage__back {
     top: 12px;
     left: 16px;
+  }
+
+  .stage__expand {
+    top: 12px;
+    right: 16px;
+  }
+
+  /* the frame is not transformed here, so fixed means the viewport again */
+  .is-expanded .slide {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    border-right: 1px solid var(--ink);
   }
 
   /* A 4:3 box is the floor, not the ceiling: home and contact settle at that
