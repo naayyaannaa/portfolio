@@ -29,6 +29,11 @@
   box-sizing: border-box;
 }
 
+::selection {
+  background: #ffff00; /* highlighter yellow */
+  color: var(--ink);
+}
+
 html,
 body {
   height: 100%;
@@ -878,6 +883,15 @@ a.accent:hover {
   height: auto;
 }
 
+/* with the whole window to fill, the write-up gets a reading width and
+   generous side margins instead of running edge to edge */
+.is-expanded .detail {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: 64px;
+  padding-right: 64px;
+}
+
 .is-expanded .scrollbar {
   position: fixed;
   z-index: 10;
@@ -970,11 +984,13 @@ a.accent:hover {
   color: #5d5d5d;
 }
 
+/* body copy (intro, fact values, leads, captions) is Arial; every title
+   keeps the display face */
 .study__intro {
   margin: 32px 0 0;
-  max-width: 720px;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 20px;
-  font-weight: 200;
+  font-weight: 400;
   line-height: 1.27;
   color: var(--ink);
 }
@@ -1005,6 +1021,60 @@ a.accent:hover {
   aspect-ratio: 3 / 4;
 }
 
+/* ---- hero image with the facts beside it ---- */
+
+/* left half: the image on a light grey, lightly grained panel;
+   right half: the facts, label beside value, centred on the panel's height */
+.study__top {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.study__heroFrame {
+  aspect-ratio: 1 / 1; /* a square filling the whole left half */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: #efefef;
+  background-image: url("/noise.svg"); /* faint fractal-noise grain, tiled */
+}
+
+.study__heroImg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
+.study__top .study__facts {
+  margin: 0;
+}
+
+/* metadata: Role / Timeline / Team / Skills / Tools */
+.study__top .study__fact {
+  grid-template-columns: 140px 1fr;
+  gap: 24px;
+  padding: 28px 0;
+}
+
+.study__top .study__label {
+  font-size: 20px;
+}
+
+.study__top .study__fact:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.study__top .study__fact:last-child {
+  padding-bottom: 0;
+}
+
 /* ---- Objective / Merchant Type / Solution Brief ---- */
 
 .study__facts {
@@ -1033,10 +1103,146 @@ a.accent:hover {
 
 .study__value {
   margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 16px;
-  font-weight: 200;
+  font-weight: 400;
   line-height: 1.4;
   color: var(--ink);
+}
+
+/* ---- Project Context: Objective / Merchant Type / Solution Brief ----
+   three columns side by side, each under the same hairline as the metadata
+   rows, so it reads as columns rather than label/value rows */
+.study__context {
+  margin: 24px 0 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.study__contextItem {
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.study__contextLabel {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.study__contextItem .study__value {
+  margin: 0;
+}
+
+/* ---- Final Product: Standby / Browse / Compare / Checkout ----
+   one row per stage: the stage name on the left, its screens in a strip on
+   the right that scrolls sideways when they run past the edge. Rules only
+   between rows — none above the first or below the last. */
+.study__screens {
+  margin-top: 24px;
+}
+
+.study__screenRow {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  align-items: center;
+  padding: 32px 0;
+}
+
+.study__screenRow:first-child {
+  padding-top: 0;
+}
+
+.study__screenRow:last-child {
+  padding-bottom: 0;
+}
+
+.study__screenRow + .study__screenRow {
+  border-top: 1px solid var(--line); /* between rows only */
+}
+
+.study__screenLabel {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -0.28px;
+  color: var(--ink);
+}
+
+.study__screenStrip {
+  display: flex;
+  gap: 24px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.study__screen {
+  display: block;
+  flex: none;
+  height: 380px;
+  width: auto;
+}
+
+/* ---- Key Design Moments ----
+   numbered rows: number and title on the left, the why on the right, with
+   rules only between rows — none above the first or below the last */
+.study__moments {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.study__moment {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 48px;
+  padding: 32px 0;
+}
+
+.study__moment:first-child {
+  padding-top: 0;
+}
+
+.study__moment:last-child {
+  padding-bottom: 0;
+}
+
+.study__moment + .study__moment {
+  border-top: 1px solid var(--line); /* the only rules in the list */
+}
+
+/* the number sits beside the title, centred on the title's height */
+.study__momentHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.study__momentNum {
+  flex: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  color: #5d5d5d;
+}
+
+.study__momentTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+
+.study__moment .study__value {
+  max-width: 620px;
 }
 
 /* ---- sections ---- */
@@ -1087,8 +1293,9 @@ a.accent:hover {
 
 .study__lead {
   margin: 16px 0 0;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 20px;
-  font-weight: 200;
+  font-weight: 400;
   line-height: 1.27;
   color: var(--ink);
 }
@@ -1402,6 +1609,12 @@ a.accent:hover {
   .stage__expand {
     top: 12px;
     right: 16px;
+  }
+
+  .is-expanded .detail {
+    margin: 0 20px;
+    padding-left: 0;
+    padding-right: 0;
   }
 
   /* the frame is not transformed here, so fixed means the viewport again */
@@ -1721,6 +1934,58 @@ a.accent:hover {
   .shot--hero {
     margin-top: 28px;
     height: 220px;
+  }
+
+  /* image on top, facts underneath */
+  .study__top {
+    margin-top: 28px;
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .study__heroFrame {
+    padding: 32px;
+  }
+
+  .study__top .study__fact {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 18px 0;
+  }
+
+  .study__context {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  /* stage name above its strip */
+  .study__screenRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 0;
+  }
+
+  .study__screenLabel {
+    font-size: 22px;
+  }
+
+  .study__screen {
+    height: 300px;
+  }
+
+  .study__moment {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px 0;
+  }
+
+  .study__momentTitle {
+    font-size: 20px;
+  }
+
+  .study__top .study__fact:first-child {
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
   }
 
   .shot--wide {

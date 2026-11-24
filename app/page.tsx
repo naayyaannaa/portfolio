@@ -53,14 +53,20 @@ type Section = {
   shot?: "hero" | "wide"; // a single placeholder box
   steps?: { step: string; caption: string }[]; // numbered grid, one shot each
   groups?: { label?: string; shots: number }[]; // labelled rows of shots
+  context?: { label: string; value: string }[]; // side-by-side columns
+  /* labelled rows of real screens, label left, screens scrolling right */
+  screens?: { label: string; images: string[] }[];
+  /* numbered decisions, title left and explanation right */
+  moments?: { title: string; body: string }[];
 };
 
 /* A written-up project. Every image slot is deliberately left blank —
    drop the artwork into the .shot boxes when the exports are ready. */
 type Study = {
-  kicker: string;
+  kicker?: string; // small grey line under the title
   date?: string; // sits beside the detail title
   intro: string;
+  hero?: string; // image in the top .shot--hero slot; blank box if absent
   facts: { label: string; value: string }[];
   sections: Section[];
 };
@@ -148,90 +154,71 @@ const COLLAGE: CardBox[] = [
   { x: 518, y: 535, w: 281, h: 305, name: "project name" },
 ];
 
+/* public/kiosk/<name>-1.png … <name>-n.png */
+const kioskShots = (name: string, n: number) =>
+  Array.from({ length: n }, (_, i) => `/kiosk/${name}-${i + 1}.png`);
+
 /* Product Discovery Kiosk — written up from the Behance case study. */
 const KIOSK: Study = {
-  kicker: "UI/UX · Self-service retail kiosk · Pine Labs",
-  date: "March 2025", // TODO placeholder — real Behance publish date needed
+  date: "July 2025",
   intro:
     "A self-service digital kiosk interface, enabling customers to browse smartphones and other devices, compare models side by side, and complete purchases directly at the kiosk.",
+  hero: "/kiosk/hero.png",
   facts: [
-    {
-      label: "Objective",
-      value:
-        "Create stickiness with merchants and maximize brand visibility for Pine Labs.",
-    },
-    { label: "Merchant Type", value: "Electronic Store" },
-    {
-      label: "Solution Brief",
-      value:
-        "To build a UI that enables customers to seamlessly evaluate different phones and make an informed purchase, enhancing customer satisfaction.",
-    },
+    { label: "Role", value: "UI/UX Design · Research" },
+    { label: "Timeline", value: "3 months" },
+    { label: "Tools", value: "Figma, FigJam" },
   ],
   sections: [
     {
-      heading: "The Challenge",
-      todo: true,
-      body: "What made this hard? Name what was breaking before the kiosk — shoppers waiting on staff to answer spec questions, no way to hold two phones side by side, inconsistent information across the shop floor.",
-    },
-    {
-      heading: "Research",
-      todo: true,
-      body: "What did you look at before designing? Store visits, how customers compare phones today, existing kiosk and e-commerce comparison patterns, and the constraints of a fixed in-store touchscreen.",
-      shot: "wide",
-    },
-    {
-      heading: "Who It's For",
-      todo: true,
-      body: "One or two short profiles — the shopper deciding between two flagships, and the store staff the kiosk is meant to free up. What each needs from the screen.",
-      groups: [{ shots: 2 }],
-    },
-    {
-      heading: "Information Architecture",
-      todo: true,
-      body: "Sitemap or flow diagram: how someone gets from the idle home screen to a completed checkout, and how they recover if they change their mind.",
-      shot: "wide",
-    },
-    {
-      heading: "Wireframes",
-      todo: true,
-      body: "Early low-fidelity layouts for browse, compare and checkout, before the visual design landed.",
-      groups: [{ shots: 3 }],
-    },
-    {
-      heading: "Design System",
-      todo: true,
-      body: "Type scale, colour, buttons, cards and the comparison table — sized for touch targets at kiosk viewing distance rather than for a phone in the hand.",
-      shot: "wide",
-    },
-    {
-      heading: "User Journey",
-      steps: [
-        { step: "Step 1", caption: "Choose from various curated filters." },
-        { step: "Step 2", caption: "Browse through phone inventory." },
-        { step: "Step 3", caption: "View phone details." },
-        { step: "Step 4", caption: "Select phone to compare." },
-        { step: "Step 5", caption: "Compare features between phone models." },
-        { step: "Step 6", caption: "Add to cart and checkout." },
+      heading: "Project Context",
+      context: [
+        {
+          label: "Objective",
+          value:
+            "Create merchant retention and maximize brand visibility for Pine Labs.",
+        },
+        { label: "Merchant Type", value: "Electronic Store" },
+        {
+          label: "Solution Brief",
+          value:
+            "To build a UI that enables customers to seamlessly evaluate different phones and make an informed purchase, enhancing customer satisfaction.",
+        },
       ],
     },
     {
-      heading: "Responsive Design",
-      lead: "Designed to fit your needs.",
-      body: "The same interface holds up across kiosk screen sizes — two devices side by side on the smaller panel, three on the wider one.",
-      shot: "wide",
-    },
-    {
-      heading: "Screens",
-      groups: [
-        { label: "Home Screens", shots: 3 },
-        { label: "Compare Devices", shots: 2 },
-        { label: "Checkout", shots: 3 },
+      heading: "Final Product",
+      screens: [
+        { label: "Standby", images: kioskShots("standby", 3) },
+        { label: "Browse", images: kioskShots("browse", 2) },
+        { label: "Compare Devices", images: kioskShots("compare", 2) },
+        { label: "Checkout & Complete", images: kioskShots("checkout", 4) },
       ],
     },
     {
-      heading: "Outcome",
-      todo: true,
-      body: "How did it land? Anything measurable is ideal — time taken to compare, completed checkouts, staff time saved — but a short honest reflection on what you would change works too.",
+      heading: "Key Design Moments",
+      moments: [
+        {
+          title: "Designing for signage, not a tablet",
+          body: "The kiosk runs on large touchscreen digital signage, not just tablets, and signage touch is far less precise than a phone's. Buttons were sized up and spaced apart so nothing triggers by accident. Every interactive element had to be intentional.",
+        },
+        {
+          title: "Tap is the only gesture",
+          body: "Digital signage doesn't register scrolling, only taps, so every interaction has to work with a single tap and nothing can depend on a swipe or scroll.",
+        },
+        {
+          title: "Standby screens must be adjustable by merchant",
+          body: "Standby screens are each store's shop window, so merchants needed to be able to promote their own products and offers. The layouts were designed to be customisable and to plug into a backend system later, where merchants can change the content themselves.",
+        },
+        {
+          title: "Filters backed by customer research",
+          body: "Customer research came first. We studied who actually comes into each store, and those findings decided the standby categories and product filters: when to lead with brand, when with price range, and so on.",
+        },
+      ],
+    },
+    {
+      heading: "Reflections",
+      body: "Apart from the usual time constraints and the continuous cycle of feedback and iteration, the project was a success. The one surprise was that the team only found out the signage couldn't scroll after we got the hardware. By then the designs were done, so it was solved with a last minute change directly in the backend, adding click to scroll navigation instead of actual scrolling. The screens above are the original designs and don't reflect that change.",
     },
   ],
 };
@@ -544,6 +531,37 @@ export default function Page() {
     scrollRef.current?.scrollTo({ top });
     window.scrollTo({ top });
   }, [slideId, project]);
+
+  /* The current view lives in the URL hash — #uiux, #uiux/2, #uiux/2/expanded
+     — so a refresh (or a shared link) lands back where you were instead of
+     on home. Read once on mount, after hydration; written on every change. */
+  const restored = useRef(false);
+  /* The server can't see the hash, so the first render has to be home to
+     match it; the saved view is applied straight after hydration. */
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const [id, p, x] = window.location.hash.slice(1).split("/");
+    const s = SLIDES.find((sl) => sl.id === id);
+    if (s) {
+      setSlideId(s.id);
+      const n = Number(p);
+      if (p && Number.isInteger(n) && s.cards?.[n]) {
+        setProject(n);
+        if (x === "expanded") setExpanded(true);
+      }
+    }
+    restored.current = true;
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  useEffect(() => {
+    if (!restored.current) return;
+    const parts = [slideId];
+    if (project !== null) parts.push(String(project));
+    if (project !== null && expanded) parts.push("expanded");
+    const hash = slideId === "home" && project === null ? "" : `#${parts.join("/")}`;
+    history.replaceState(null, "", hash || window.location.pathname);
+  }, [slideId, project, expanded]);
 
   const panel = RIBBON.find((r) => r.label === ribbon);
   const slide = SLIDES.find((s) => s.id === slideId) ?? SLIDES[0];
@@ -862,8 +880,8 @@ export default function Page() {
                   body={
                     <>
                       Hi! i am <span className="accent">NAYANA</span>, a
-                      multidisciplinary designer that loves creating and
-                      experimenting with all things creative. Welcome to my
+                      multidisciplinary designer that loves creating,
+                      experimenting and solving problems. Welcome to my
                       gallery of work.
                     </>
                   }
@@ -1163,21 +1181,36 @@ function ProjectDetail({
 /* Every .shot is an empty bordered box, matching the card placeholders —
    the artwork drops in later. */
 function CaseStudy({ study }: { study: Study }) {
+  const facts = (
+    <dl className="study__facts">
+      {study.facts.map((f) => (
+        <div key={f.label} className="study__fact">
+          <dt className="study__label">{f.label}</dt>
+          <dd className="study__value">{f.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+
   return (
     <div className="study">
-      <p className="study__kicker">{study.kicker}</p>
+      {study.kicker && <p className="study__kicker">{study.kicker}</p>}
       <p className="study__intro">{study.intro}</p>
 
-      <span className="shot shot--hero" />
-
-      <dl className="study__facts">
-        {study.facts.map((f) => (
-          <div key={f.label} className="study__fact">
-            <dt className="study__label">{f.label}</dt>
-            <dd className="study__value">{f.value}</dd>
+      {study.hero ? (
+        <div className="study__top">
+          <div className="study__heroFrame">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="study__heroImg" src={study.hero} alt="" />
           </div>
-        ))}
-      </dl>
+          {facts}
+        </div>
+      ) : (
+        <>
+          <span className="shot shot--hero" />
+          {facts}
+        </>
+      )}
 
       {study.sections.map((s) => (
         <StudySection key={s.heading} section={s} />
@@ -1199,6 +1232,53 @@ function StudySection({ section: s }: { section: Section }) {
         <p className={s.todo ? "study__caption study__prompt" : "study__caption"}>
           {s.body}
         </p>
+      )}
+
+      {s.context && (
+        <dl className="study__context">
+          {s.context.map((c) => (
+            <div key={c.label} className="study__contextItem">
+              <dt className="study__contextLabel">{c.label}</dt>
+              <dd className="study__value">{c.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {s.screens && (
+        <div className="study__screens">
+          {s.screens.map((row) => (
+            <div key={row.label} className="study__screenRow">
+              <p className="study__screenLabel">{row.label}</p>
+              <div className="study__screenStrip">
+                {row.images.map((src) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={src}
+                    className="study__screen"
+                    src={src}
+                    alt={`${row.label} screen`}
+                    loading="lazy"
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {s.moments && (
+        <ol className="study__moments">
+          {s.moments.map((m, i) => (
+            <li key={m.title} className="study__moment">
+              <div className="study__momentHead">
+                <span className="study__momentNum">({i + 1})</span>
+                <h3 className="study__momentTitle">{m.title}</h3>
+              </div>
+              <p className="study__value">{m.body}</p>
+            </li>
+          ))}
+        </ol>
       )}
 
       {s.shot && <span className={`shot shot--${s.shot}`} />}
