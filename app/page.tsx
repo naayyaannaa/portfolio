@@ -22,8 +22,33 @@ const RIBBON = [
     label: "Tech Stack",
     items: ["Figma", "TouchDesigner", "Photoshop", "Claude Code"],
   },
-  { label: "Links", items: ["Instagram", "LinkedIn", "Behance"] },
+  { label: "Links", items: ["LinkedIn", "Behance"] },
 ];
+
+const LINKEDIN = "https://www.linkedin.com/in/nayana-avinash-b5064028a/";
+
+/* ribbon items that go somewhere; the rest are plain text */
+const RIBBON_LINKS: Record<string, string> = {
+  "nayanaavinash25@gmail.com": "mailto:nayanaavinash25@gmail.com",
+  LinkedIn: LINKEDIN,
+  Behance: "https://www.behance.net/nayana_avinash",
+};
+
+/* A ribbon item: a link out when it has one, plain text otherwise. */
+function RibbonItem({ item, className }: { item: string; className: string }) {
+  const href = RIBBON_LINKS[item];
+  /* sites open in a new tab; the email opens the mail app in place */
+  const away = href?.startsWith("http")
+    ? { target: "_blank", rel: "noopener noreferrer" }
+    : {};
+  return href ? (
+    <a className={`${className} ribbon__link`} href={href} {...away}>
+      {item}
+    </a>
+  ) : (
+    <span className={className}>{item}</span>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /*  Slides — the overview rail doubles as the nav                      */
@@ -37,6 +62,8 @@ type CardBox = {
   w: number;
   h: number;
   name: string;
+  /* for a card with no case study yet; a study carries its own */
+  date?: string;
   study?: Study;
 };
 
@@ -76,10 +103,15 @@ type Study = {
   kicker?: string; // small grey line under the title
   date?: string; // sits beside the detail title
   intro: string;
+  /* a live site, linked under the title */
+  link?: string;
   hero?: string; // image in the top .shot--hero slot; blank box if absent
   /* a live embed (e.g. a Figma prototype) under the hero, with its heading */
   embed?: string;
   embedTitle?: string;
+  /* a screen recording under the hero, with its heading */
+  video?: string;
+  videoTitle?: string;
   /* the kiosk's layout — hero panel left, facts right — even before there
      is a hero image to put in it. "glow" swaps the grey grained panel for
      an outlined square with the blue glow, as on Klik AI's features. */
@@ -87,8 +119,11 @@ type Study = {
   /* a faint shape laid under the grey grain of the hero panel and card */
   backdrop?: string;
   /* "dusk" swaps the grey grain of the hero panel and card for a white
-     square with an orange caustic (public/bounce/caustic.svg) */
-  grain?: "dusk";
+     square with an orange caustic (public/bounce/caustic.svg); "aura" for
+     a soft pink and blue glow, no grain */
+  grain?: "dusk" | "aura";
+  /* a star sticker stuck over the top right corner of the card */
+  sticker?: string;
   /* what I did, shown in square brackets under the card's name */
   tags?: string[];
   facts: { label: string; value: string }[];
@@ -433,38 +468,68 @@ const ZENITH: Study = {
   sections: [],
 };
 
+/* Digital Mixtape — a live site: the link, the description, the cover with
+   the facts, then a screen recording of it in use. */
+const MIXTAPE: Study = {
+  date: "October 2026",
+  tags: ["Design", "Development"],
+  link: "https://my-mixtape.vercel.app/",
+  intro:
+    "I love having music on in the background, but I never liked the music player Spotify provides, so I thought, why not make my own? It turns your Spotify playlists into CD cases on a shelf, and opening one plays it through a little player with a spinning disc.",
+  hero: "/mixtape/hero.png", // media/mix.png
+  grain: "aura",
+  sticker: "my favourite",
+  facts: [
+    { label: "Role", value: "Design · Development" },
+    { label: "Timeline", value: "1 week" },
+    { label: "Tools", value: "Figma · Claude Code · Photoshop" },
+  ],
+  videoTitle: "Demo",
+  video: "/mixtape/demo.mp4", // media/mixtape vid.MOV, at 720p
+  sections: [
+    {
+      heading: "Limitations",
+      body: "This was so fun to make, and my friends and I genuinely use it. But Spotify's developer platform only allows up to 5 users per account unless you are a registered business, which I am not. So on the login page I added a special star button that still has the background visuals, so those who can't connect to Spotify can still use it. I also wanted to make this work with Apple Music, but that requires an Apple Developer account, which wasn't in my budget.",
+    },
+  ],
+};
+
 /* UI/UX gets its own copy of the collage so cards can carry case studies
    without changing the Other slide, which shares the same layout. */
 /* extra room between the first row of UI/UX cards and the second, whose
    tags sit lower now that every top-row card carries a study */
 const UIUX_ROW_GAP = 64;
 
-const UIUX_CARDS: CardBox[] = COLLAGE.map((box, i) => {
-  const c = i >= 3 ? { ...box, y: box.y + UIUX_ROW_GAP } : box;
-  if (i === 0) return { ...c, name: "Klik AI", study: KLIK };
-  if (i === 1) return { ...c, name: "Zenith Website", study: ZENITH };
-  if (i === 2) return { ...c, name: "Product Discovery Kiosk", study: KIOSK };
-  /* landscape, to suit its wide website cover */
-  if (i === 3)
-    return { ...c, w: 340, h: 250, name: "The Bounce Factor", study: BOUNCE };
-  return c;
-});
+/* The first row is the deck's; the second is re-cut to hold three cards
+   across the same width, and a third steps down by the same gap again. */
+const ROW_2 = COLLAGE[3].y + UIUX_ROW_GAP;
+const ROW_3 = ROW_2 + 276 + 122; // under row 2's tallest card
 
-/* and Other gets its own copy for the same reason */
-const OTHER_CARDS: CardBox[] = COLLAGE.map((c, i) =>
-  i === 0 ? { ...c, name: "Blysk Handcrafted", study: BLYSK } : c,
-);
+const UIUX_CARDS: CardBox[] = [
+  { ...COLLAGE[0], name: "Klik AI", study: KLIK },
+  { ...COLLAGE[1], name: "Zenith Website", study: ZENITH },
+  { ...COLLAGE[2], name: "Product Discovery Kiosk", study: KIOSK },
+  { x: 42, y: ROW_2, w: 240, h: 262, name: "Midas Dashboard", date: "April 2026" },
+  /* landscape, to suit its wide cover */
+  { x: 342, y: ROW_2, w: 280, h: 230, name: "Digital Mixtape", study: MIXTAPE },
+  { x: 682, y: ROW_2, w: 228, h: 276, name: "Blysk Handcrafted", study: BLYSK },
+  /* landscape, to suit its wide website cover */
+  { x: 88, y: ROW_3, w: 340, h: 250, name: "The Bounce Factor", study: BOUNCE },
+];
+
+/* Physical Design keeps the plain collage */
+const OTHER_CARDS: CardBox[] = COLLAGE;
 
 const SLIDES: Slide[] = [
   { id: "home", title: "Home", color: "#FF2E77", ink: "#000000", accent: "#FF2E77" },
   {
     id: "uiux",
-    title: "UI/UX",
+    title: "Design",
     color: "#31FF2E",
     ink: "#000000",
     accent: "#31FF2E",
     strokeColor: "#000000",
-    heading: "UI/UX work",
+    heading: "Design Work",
     cards: UIUX_CARDS,
   },
   {
@@ -485,12 +550,12 @@ const SLIDES: Slide[] = [
   },
   {
     id: "other",
-    title: "Other",
+    title: "Physical Design",
     color: "#FFFC2E",
     ink: "#000000",
     accent: "#FFFC2E",
     strokeColor: "#000000",
-    heading: "Other work",
+    heading: "Physical Design Work",
     cards: OTHER_CARDS,
   },
   {
@@ -859,9 +924,7 @@ export default function Page() {
             {splitRows(panel?.items ?? []).map((row, i) => (
               <div key={i} className="header__row">
                 {row.map((item) => (
-                  <span key={item} className="header__item">
-                    {item}
-                  </span>
+                  <RibbonItem key={item} item={item} className="header__item" />
                 ))}
               </div>
             ))}
@@ -908,7 +971,7 @@ export default function Page() {
                   <div className="drawer__panelInner">
                     {tab.items.map((item) => (
                       <p key={item} className="drawer__row">
-                        {item}
+                        <RibbonItem item={item} className="drawer__text" />
                       </p>
                     ))}
                   </div>
@@ -995,6 +1058,7 @@ export default function Page() {
                 <ProjectDetail
                   name={slide.cards[project]?.name ?? "project"}
                   index={project}
+                  date={slide.cards[project]?.date}
                   study={slide.cards[project]?.study}
                 />
               ) : slide.cards ? (
@@ -1009,18 +1073,7 @@ export default function Page() {
                   works={slide.works}
                 />
               ) : slide.id === "contact" ? (
-                <Split
-                  title="Let's make something"
-                  body={
-                    <>
-                      Say hello at{" "}
-                      <a className="accent" href="mailto:nayanaavinash25@gmail.com">
-                        nayanaavinash25@gmail.com
-                      </a>
-                      . Briefs, collaborations and good ideas all welcome.
-                    </>
-                  }
-                />
+                <Contact />
               ) : (
                 <Split
                   title="Welcome to my portfolio"
@@ -1052,6 +1105,29 @@ function Split({ title, body }: { title: string; body: React.ReactNode }) {
     <div className="split">
       <h1 className="split__title">{title}</h1>
       <p className="split__body">{body}</p>
+    </div>
+  );
+}
+
+/* Contact — the heading top left, the ways to reach me listed bottom right,
+   on the same grid as the home slide. */
+function Contact() {
+  return (
+    <div className="split">
+      <h1 className="split__title">For inquiries and commissions</h1>
+      <ul className="split__list">
+        <li>
+          Contact me through{" "}
+          <a href="mailto:nayanaavinash25@gmail.com">email</a>.
+        </li>
+        <li>
+          Here&apos;s my{" "}
+          <a href={LINKEDIN} target="_blank" rel="noopener noreferrer">
+            LinkedIn
+          </a>
+          .
+        </li>
+      </ul>
     </div>
   );
 }
@@ -1180,6 +1256,8 @@ function CollageSlide({
   const box = {
     "--span": `${span}px`,
     "--tall": `${tall}px`,
+    /* lowest card edge on the deck — a third row makes the page longer */
+    "--bottom": `${Math.max(...cards.map((c) => c.y + c.h))}px`,
   } as React.CSSProperties;
 
   return (
@@ -1202,25 +1280,31 @@ function CollageSlide({
             }
           >
             <button type="button" className="card" onClick={() => onOpen(i)}>
-              {/* the case study's cover, framed the same way as its header */}
-              <span
-                className={
-                  !c.study?.hero
-                    ? "card__media"
-                    : c.study.framed === "glow"
-                      ? "card__media card__media--cover card__media--glow"
-                      : c.study.backdrop
-                      ? "card__media card__media--cover card__media--grain has-backdrop"
-                      : c.study.grain === "dusk"
-                      ? "card__media card__media--cover card__media--grain grain--dusk"
-                      : "card__media card__media--cover card__media--grain"
-                }
-                style={backdropStyle(c.study?.backdrop, { height: c.h })}
-              >
-                {c.study?.hero && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img className="card__cover" src={c.study.hero} alt="" />
-                )}
+              {/* the case study's cover, framed the same way as its header,
+                  with anything stuck on its corner */}
+              <span className="card__frame">
+                <span
+                  className={
+                    !c.study?.hero
+                      ? "card__media"
+                      : c.study.framed === "glow"
+                        ? "card__media card__media--cover card__media--glow"
+                        : c.study.backdrop
+                        ? "card__media card__media--cover card__media--grain has-backdrop"
+                        : c.study.grain === "dusk"
+                        ? "card__media card__media--cover card__media--grain grain--dusk"
+                        : c.study.grain === "aura"
+                        ? "card__media card__media--cover grain--aura"
+                        : "card__media card__media--cover card__media--grain"
+                  }
+                  style={backdropStyle(c.study?.backdrop, { height: c.h })}
+                >
+                  {c.study?.hero && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img className="card__cover" src={c.study.hero} alt="" />
+                  )}
+                </span>
+                {c.study?.sticker && <Sticker label={c.study.sticker} />}
               </span>
               <span className="card__name">
                 ({i + 1}) {c.name}
@@ -1359,10 +1443,12 @@ function SlideScrollbar({
 function ProjectDetail({
   name,
   index,
+  date,
   study,
 }: {
   name: string;
   index: number;
+  date?: string;
   study?: Study;
 }) {
   return (
@@ -1371,10 +1457,26 @@ function ProjectDetail({
         <h1 className="detail__title">
           ({index + 1}) {name}
         </h1>
-        {study?.date && <p className="detail__date">{study.date}</p>}
+        {(study?.date ?? date) && (
+          <p className="detail__date">{study?.date ?? date}</p>
+        )}
       </div>
       {study && <CaseStudy study={study} />}
     </div>
+  );
+}
+
+/* A round chrome sticker stuck over a card's top right corner, half on and
+   half off, as if it were holding the cover down. Work page only. */
+function Sticker({ label }: { label: string }) {
+  return (
+    <span className="sticker" aria-hidden="true">
+      <span className="sticker__text">
+        {label.split(" ").map((w) => (
+          <span key={w}>{w}</span>
+        ))}
+      </span>
+    </span>
   );
 }
 
@@ -1394,6 +1496,16 @@ function CaseStudy({ study }: { study: Study }) {
 
   return (
     <div className="study">
+      {study.link && (
+        <a
+          className="study__link"
+          href={study.link}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          visit site
+        </a>
+      )}
       {study.kicker && <p className="study__kicker">{study.kicker}</p>}
       <p className="study__intro">{study.intro}</p>
 
@@ -1407,7 +1519,9 @@ function CaseStudy({ study }: { study: Study }) {
                   ? "study__heroFrame has-backdrop"
                   : study.grain === "dusk"
                     ? "study__heroFrame grain--dusk"
-                    : "study__heroFrame"
+                    : study.grain === "aura"
+                      ? "study__heroFrame grain--aura"
+                      : "study__heroFrame"
             }
             style={backdropStyle(study.backdrop)}
           >
@@ -1442,6 +1556,21 @@ function CaseStudy({ study }: { study: Study }) {
         </section>
       )}
 
+      {study.video && (
+        <section className="study__section">
+          {study.videoTitle && (
+            <h2 className="study__heading">{study.videoTitle}</h2>
+          )}
+          <video
+            className="study__video"
+            src={study.video}
+            controls
+            playsInline
+            preload="metadata"
+          />
+        </section>
+      )}
+
       {study.sections.map((s) => (
         <StudySection key={s.heading} section={s} />
       ))}
@@ -1450,8 +1579,22 @@ function CaseStudy({ study }: { study: Study }) {
 }
 
 function StudySection({ section: s }: { section: Section }) {
+  /* nothing but a paragraph — Reflections, Limitations — reads larger */
+  const prose =
+    s.body &&
+    !s.lead &&
+    !s.context &&
+    !s.screens &&
+    !s.tabs &&
+    !s.moments &&
+    !s.shot &&
+    !s.steps &&
+    !s.groups;
+  const cls = ["study__section"];
+  if (s.compact) cls.push("study__section--compact");
+  if (prose) cls.push("study__section--prose");
   return (
-    <section className={s.compact ? "study__section study__section--compact" : "study__section"}>
+    <section className={cls.join(" ")}>
       <h2 className="study__heading">
         {s.heading}
         {s.todo && <span className="study__todo">to write</span>}

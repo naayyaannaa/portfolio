@@ -500,6 +500,50 @@ button:disabled,
   color: var(--ink);
 }
 
+/* contact: the ways to reach me, bottom right, with the links in blue */
+.split__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  align-self: end;
+  justify-self: end;
+  /* lifted a little off the slide's bottom edge */
+  margin-bottom: 57px;
+  text-align: right;
+  font-size: 28px;
+  font-weight: 200;
+  line-height: 1.27;
+}
+
+.split__list {
+  color: var(--ink);
+}
+
+.split__list a {
+  color: #283eff;
+  text-decoration: none;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+.split__list a:hover,
+.split__list a:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+.ribbon__link:hover,
+.ribbon__link:focus-visible {
+  color: var(--pink);
+  outline: none;
+}
+
+/* header and drawer links read like the plain items beside them */
+.ribbon__link {
+  color: inherit;
+  text-decoration: none;
+}
+
 .accent {
   color: var(--pink);
   text-decoration: none;
@@ -761,7 +805,12 @@ a.accent:hover {
 /* ---- collage layout: cards placed and sized individually ---- */
 
 .work--collage {
-  height: calc(976px + var(--work-gap) - var(--work-gap-deck));
+  /* the deck's 976, or longer when the cards run further down (--bottom
+     is the lowest card edge; 136 leaves the deck's room under it) */
+  height: calc(
+    max(976px, var(--bottom, 0px) + 136px) + var(--work-gap) -
+      var(--work-gap-deck)
+  );
   position: relative;
 }
 
@@ -796,6 +845,8 @@ a.accent:hover {
 }
 
 .card__media {
+  /* a span inside .card__frame, so it has to be made a block explicitly */
+  display: block;
   width: 100%;
   aspect-ratio: 279 / 290;
   border: 1px solid #5d5d5d;
@@ -863,6 +914,91 @@ a.accent:hover {
 .grain--dusk .card__cover,
 .grain--dusk .study__heroImg {
   box-shadow: 0 12px 32px rgba(43, 20, 6, 0.22);
+}
+
+/* Digital Mixtape's cover: a soft pink and blue aura, no grain. Doubled
+   class so it beats .study__heroFrame. */
+.grain--aura.grain--aura {
+  background:
+    radial-gradient(ellipse 75% 70% at 26% 30%, #ffa8cc 0%, transparent 75%),
+    radial-gradient(ellipse 72% 75% at 76% 72%, #a3bdff 0%, transparent 75%),
+    #f8f2fa;
+}
+
+.grain--aura.card__media--cover {
+  padding: 20px 24px;
+}
+
+/* drop-shadow, not box-shadow: the cover's corners are transparent */
+.grain--aura .card__cover,
+.grain--aura .study__heroImg {
+  filter: drop-shadow(0 8px 14px rgba(60, 40, 90, 0.2));
+}
+
+/* the cover and whatever is stuck on it; the sticker's anchor */
+.card__frame {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+/* stuck over the cover's top right corner, half on and half off: a round
+   chrome sticker with a white die-cut edge */
+.sticker {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 72px;
+  aspect-ratio: 1;
+  translate: 40% -40%;
+  rotate: 12deg;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  /* chrome: soft diagonal bands of light and darker silver, with a sheen
+     across the top — straight bands rather than a sweep round the centre */
+  background:
+    radial-gradient(ellipse 70% 45% at 38% 22%, rgba(255, 255, 255, 0.7) 0%, transparent 70%),
+    linear-gradient(
+      135deg,
+      #f4f5f7 0%,
+      #c6cad0 28%,
+      #ffffff 46%,
+      #b1b6bc 64%,
+      #e8eaed 82%,
+      #c3c7cd 100%
+    );
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  /* container units off the sticker, so the label scales with it */
+  container-type: inline-size;
+}
+
+.sticker__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font);
+  font-size: 11.7px; /* fixed, so shrinking the sticker keeps the type */
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  color: #1c1d20;
+  /* pressed into the chrome */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 900px) {
+  /* less overhang, so the sticker stays inside the page gutter */
+  .sticker {
+    translate: 22% -36%;
+  }
 }
 
 /* the kiosk's hero takes most of the row, the facts a narrower column */
@@ -1178,6 +1314,47 @@ a.accent:hover {
   font-weight: 400;
   line-height: 1.2;
   color: #5d5d5d;
+}
+
+/* the live site's address, straight under the title */
+.study__link {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #283eff; /* the contact page's link blue */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* the deck's yellow, edged in the link blue from the inside — the stroke
+   straddles the letterform, so its inner half reads as an inner shadow */
+.study__link:hover,
+.study__link:focus-visible {
+  color: #fffc2e;
+  -webkit-text-stroke: 0.8px #283eff;
+  outline: none;
+}
+
+/* a screen recording — the same size as the prototype embeds' screens */
+.study__video {
+  display: block;
+  width: 100%;
+  max-width: 70%;
+  margin: 40px auto 0;
+  border: 1px solid #000000;
+  background: #000000;
+}
+
+@media (max-width: 900px) {
+  .study__link {
+    font-size: 14px;
+  }
+
+  .study__video {
+    max-width: 100%;
+  }
 }
 
 /* body copy (intro, fact values, leads, captions) is Arial; every title
@@ -1749,6 +1926,11 @@ a.accent:hover {
   color: var(--ink);
 }
 
+/* a section that is only a paragraph (Reflections, Limitations) */
+.study__section--prose .study__caption {
+  font-size: 16px;
+}
+
 /* ---- user journey: 3 across, 6 steps ---- */
 
 .study__journey {
@@ -2120,9 +2302,15 @@ a.accent:hover {
   }
 
   /* flush right, matching the header panel above it */
-  .split__body {
+  .split__body,
+  .split__list {
     font-size: 18px;
     text-align: right;
+  }
+
+  /* stacked under the heading here, so no lift off the bottom */
+  .split__list {
+    margin-bottom: 0;
   }
 
   /* ---- work pages ---- */
