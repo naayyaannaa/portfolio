@@ -12,9 +12,9 @@ const stackSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Nayana — Portfolio",
+  title: "Nayana | Portfolio",
   description:
-    "Nayana — multidisciplinary designer. A deck of UI/UX, TouchDesigner and other work.",
+    "Nayana, multidisciplinary designer. A deck of UI/UX, TouchDesigner and other work.",
 };
 
 /* Without this the phone assumes a ~980px viewport and renders the deck

@@ -55,9 +55,15 @@ type Section = {
   groups?: { label?: string; shots: number }[]; // labelled rows of shots
   context?: { label: string; value: string }[]; // side-by-side columns
   /* labelled rows of real screens, label left, screens scrolling right */
-  screens?: { label: string; images: string[] }[];
-  /* numbered decisions, title left and explanation right */
-  moments?: { title: string; body: string }[];
+  /* `slots` adds that many empty placeholder screens after the images */
+  screens?: { label: string; images: string[]; slots?: number }[];
+  /* tabbed panel: tabs across the top, copy left and a screenshot right,
+     the text and the image each sliding to the next — see StudyTabs */
+  tabs?: { title: string; body: string; image: string }[];
+  /* numbered decisions, title left and explanation right. With an `image`
+     the row turns round: the image in an outlined blue-glow square on the
+     left, the number, title and copy on the right. */
+  moments?: { title: string; body: string; image?: string }[];
 };
 
 /* A written-up project. Every image slot is deliberately left blank —
@@ -67,6 +73,10 @@ type Study = {
   date?: string; // sits beside the detail title
   intro: string;
   hero?: string; // image in the top .shot--hero slot; blank box if absent
+  /* the kiosk's layout — hero panel left, facts right — even before there
+     is a hero image to put in it. "glow" swaps the grey grained panel for
+     an outlined square with the blue glow, as on Klik AI's features. */
+  framed?: boolean | "glow";
   facts: { label: string; value: string }[];
   sections: Section[];
 };
@@ -101,7 +111,7 @@ const BLYSK: Study = {
   kicker: "Branding · Handcrafted goods",
   date: "August 2025",
   intro:
-    "Brand identity for Blysk Handcrafted, a maker of handcrafted goods — built out in Figma from the mark through to the applied system.",
+    "Brand identity for Blysk Handcrafted, a maker of handcrafted goods, built out in Figma from the mark through to the applied system.",
   facts: [
     { label: "Brand", value: "Blysk Handcrafted" },
     { label: "Discipline", value: "Branding" },
@@ -111,24 +121,24 @@ const BLYSK: Study = {
     {
       heading: "The Brief",
       todo: true,
-      body: "What was Blysk asking for, and what did handcrafted have to mean visually? Name the starting point — a new brand, a rename, or an identity that had outgrown itself.",
+      body: "What was Blysk asking for, and what did handcrafted have to mean visually? Name the starting point: a new brand, a rename, or an identity that had outgrown itself.",
     },
     {
       heading: "Direction",
       todo: true,
-      body: "The references and the thinking behind the look — where the warmth comes from, and what you deliberately steered away from.",
+      body: "The references and the thinking behind the look: where the warmth comes from, and what you deliberately steered away from.",
       shot: "wide",
     },
     {
       heading: "The Mark",
       todo: true,
-      body: "The logo, its construction and the variants it ships in — primary, stacked, and whatever survives at small sizes.",
+      body: "The logo, its construction and the variants it ships in: primary, stacked, and whatever survives at small sizes.",
       groups: [{ shots: 2 }],
     },
     {
       heading: "Identity System",
       todo: true,
-      body: "Type, colour and the supporting elements — the pieces that let the brand hold together across things you did not design yourself.",
+      body: "Type, colour and the supporting elements, the pieces that let the brand hold together across things you did not design yourself.",
       shot: "wide",
     },
     {
@@ -223,6 +233,106 @@ const KIOSK: Study = {
   ],
 };
 
+/* Klik AI — AI that builds, lists & grows an ecommerce store. Laid out
+   on the kiosk's template. The full product is under NDA, so instead of a
+   Final Product section it walks through the platform (tabbed) and its AI
+   features, with a screenshot each. Screens live in public/klik. Process,
+   the design moments and the reflections are todo until written up. */
+const KLIK: Study = {
+  date: "April 2025",
+  intro:
+    "An ecommerce management tool that uses AI to take care of everything end to end, from cataloging, product photos, content and pricing to listing across multiple platforms, so a brand can build, list and grow its store from one place.",
+  framed: "glow",
+  facts: [
+    { label: "Role", value: "Designer" },
+    { label: "Timeline", value: "8 months" },
+    { label: "Tools", value: "Figma, FigJam, ChatGPT, Gemini" },
+  ],
+  sections: [
+    {
+      heading: "Project Context",
+      context: [
+        {
+          label: "Problem",
+          value:
+            "Fast fashion thrives on volume and variety, with hundreds of SKUs launched monthly. Each piece requires photos, content, pricing, and multi-platform management, which slows down speed-to-market and inflates operational costs.",
+        },
+        { label: "Who It Affects", value: "Brands, teams, and customers alike." },
+        {
+          label: "Solution Brief",
+          value:
+            "A tool that automates it all, removing the manual choking point in fast-fashion ecommerce.",
+        },
+      ],
+    },
+    {
+      heading: "Process",
+      todo: true,
+      body: "How you got here: the research and notes, the flows mapped in FigJam, early wireframes and how they changed. A few annotated images do more than a lot of text.",
+      groups: [
+        { label: "Research & Notes", shots: 2 },
+        { label: "Wireframes", shots: 3 },
+      ],
+    },
+    {
+      heading: "The Platform",
+      body: "A full-stack commerce back-end that powers everything from product creation to multi-channel sales, streamlining operations and accelerating growth.",
+      tabs: [
+        {
+          title: "End-to-End Commerce",
+          body: "The complete catalog generation pipeline, covering the entire product life cycle. Businesses can track products from the moment they are ordered from vendors, follow their status through the supply chain, and sync listings across ecommerce platforms, their own website and physical stores.",
+          image: "/klik/end-to-end.png",
+        },
+        {
+          title: "Multi-Channel Management",
+          body: "Integrates with Amazon, Flipkart, Shopify and offline POS systems, so the whole catalog is managed in one place. Any change, whether price, stock or description, updates instantly across every platform, cutting errors and manual upkeep.",
+          image: "/klik/multi-channel.png",
+        },
+        {
+          title: "Data and Analytics",
+          body: "Real-time sales analytics and inventory tracking show performance by product, platform and location. Teams can spot fast movers, weak listings and overstock early, and act on the data quickly.",
+          image: "/klik/data-analytics.png",
+        },
+      ],
+    },
+    {
+      heading: "AI Features",
+      moments: [
+        {
+          title: "Cataloging",
+          body: "From a single product image, it generates optimised, platform-ready titles and detailed descriptions. That takes a large load off content teams, keeps the brand consistent across channels, and improves discoverability and SEO.",
+          image: "/klik/cataloging.png",
+        },
+        {
+          title: "Image Generation",
+          body: "Removes the need for slow, costly photoshoots. From one input image, it generates multiple visuals of the product in different angles, styles and backgrounds, saving time and money while improving consistency and speed to market.",
+          image: "/klik/image-generation.png",
+        },
+        {
+          title: "Documentation",
+          body: "Reads invoices and shipping labels, pulls out the key details and fills in the required fields with high accuracy. Upload a PDF and the system handles the rest, removing repetitive data entry, reducing errors and speeding up order processing.",
+          image: "/klik/documentation.png",
+        },
+        {
+          title: "Collection Generation",
+          body: "Turns existing inventory into curated, ready-to-market collections. In a few clicks it picks products that go well together and writes the collection names, themes and descriptions for the website and social media, so collections ship faster with consistent branding.",
+          image: "/klik/collection-generation.png",
+        },
+      ],
+    },
+    {
+      heading: "Key Design Moments",
+      todo: true,
+      body: "Three or four decisions that shaped the product: what made automating a whole catalog feel trustworthy, and where people still need to step in and review.",
+    },
+    {
+      heading: "Reflections",
+      todo: true,
+      body: "How it landed, what surprised you, and what you would push further given another pass.",
+    },
+  ],
+};
+
 /* The Bounce Factor — the Behance gallery is only a hero, a graphics board
    and a sign-off, so the written sections below are marked todo: they are
    prompts for Nayana to fill in, not claims about work already done. */
@@ -232,7 +342,7 @@ const BOUNCE: Study = {
   intro:
     "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
   facts: [
-    { label: "Brand", value: "The Bounce Factor — thebouncefactor.in" },
+    { label: "Brand", value: "The Bounce Factor (thebouncefactor.in)" },
     { label: "Discipline", value: "UI/UX Design, Graphic Design" },
     {
       label: "Deliverables",
@@ -244,7 +354,7 @@ const BOUNCE: Study = {
     {
       heading: "The Challenge",
       todo: true,
-      body: "What was hard about this one? Name the problem the brand had before the redesign — teams could not picture a custom kit before ordering, the old site did not convert, the brand had no consistent visual language across channels.",
+      body: "What was hard about this one? Name the problem the brand had before the redesign: teams could not picture a custom kit before ordering, the old site did not convert, the brand had no consistent visual language across channels.",
     },
     {
       heading: "Research",
@@ -255,7 +365,7 @@ const BOUNCE: Study = {
     {
       heading: "Who It's For",
       todo: true,
-      body: "One or two short profiles — the team captain ordering twenty kits on a deadline, the individual player after one custom jersey. What each needs from the site.",
+      body: "One or two short profiles: the team captain ordering twenty kits on a deadline, the individual player after one custom jersey. What each needs from the site.",
       groups: [{ shots: 2 }],
     },
     {
@@ -273,7 +383,7 @@ const BOUNCE: Study = {
     {
       heading: "Design System",
       todo: true,
-      body: "Type scale, colour, buttons and cards — the pieces the site is built from.",
+      body: "Type scale, colour, buttons and cards: the pieces the site is built from.",
       shot: "wide",
     },
     {
@@ -294,7 +404,7 @@ const BOUNCE: Study = {
     {
       heading: "Outcome",
       todo: true,
-      body: "How did it land? Anything measurable is ideal — orders, enquiries, time to place an order — but a short honest reflection on what you would change works too.",
+      body: "How did it land? Anything measurable is ideal (orders, enquiries, time to place an order), but a short honest reflection on what you would change works too.",
     },
   ],
 };
@@ -302,6 +412,7 @@ const BOUNCE: Study = {
 /* UI/UX gets its own copy of the collage so cards can carry case studies
    without changing the Other slide, which shares the same layout. */
 const UIUX_CARDS: CardBox[] = COLLAGE.map((c, i) => {
+  if (i === 0) return { ...c, name: "Klik AI", study: KLIK };
   if (i === 2) return { ...c, name: "Product Discovery Kiosk", study: KIOSK };
   if (i === 3) return { ...c, name: "The Bounce Factor", study: BOUNCE };
   return c;
@@ -545,9 +656,12 @@ export default function Page() {
     if (s) {
       setSlideId(s.id);
       const n = Number(p);
+      const full = Boolean(s.cards || s.works);
       if (p && Number.isInteger(n) && s.cards?.[n]) {
         setProject(n);
         if (x === "expanded") setExpanded(true);
+      } else if (p === "expanded" && full) {
+        setExpanded(true);
       }
     }
     restored.current = true;
@@ -558,7 +672,7 @@ export default function Page() {
     if (!restored.current) return;
     const parts = [slideId];
     if (project !== null) parts.push(String(project));
-    if (project !== null && expanded) parts.push("expanded");
+    if (expanded) parts.push("expanded");
     const hash = slideId === "home" && project === null ? "" : `#${parts.join("/")}`;
     history.replaceState(null, "", hash || window.location.pathname);
   }, [slideId, project, expanded]);
@@ -658,7 +772,8 @@ export default function Page() {
   const full = Boolean(slide.cards || slide.works);
 
   const openProject = (i: number) => {
-    parked.current = scrollRef.current?.scrollTop ?? 0;
+    /* the slide scrolls on desktop, the window on mobile — see globals.css */
+    parked.current = scrollRef.current?.scrollTop || window.scrollY;
     setProject(i);
   };
 
@@ -814,8 +929,8 @@ export default function Page() {
               ← back
             </button>
           )}
-          {/* case studies only — across the bar from the back button */}
-          {project !== null && slide.cards && (
+          {/* work pages and case studies — across the bar from the back button */}
+          {full && (
             <button
               type="button"
               className="iconbtn stage__expand"
@@ -869,8 +984,8 @@ export default function Page() {
                       Say hello at{" "}
                       <a className="accent" href="mailto:nayanaavinash25@gmail.com">
                         nayanaavinash25@gmail.com
-                      </a>{" "}
-                      — briefs, collaborations and good ideas all welcome.
+                      </a>
+                      . Briefs, collaborations and good ideas all welcome.
                     </>
                   }
                 />
@@ -1012,15 +1127,37 @@ function CollageSlide({
   cards: CardBox[];
   onOpen: (i: number) => void;
 }) {
+  /* Expanded, the collage is laid out again in its own centred box: each
+     card keeps its place as a share of the free space across (--fx), so the
+     gaps grow with the box while the arrangement stays the deck's; down, the
+     offsets are stretched by --spread-y. See .is-expanded .work__collage. */
+  const minX = Math.min(...cards.map((c) => c.x));
+  const minY = Math.min(...cards.map((c) => c.y));
+  const span = Math.max(...cards.map((c) => c.x + c.w)) - minX;
+  const tall = Math.max(...cards.map((c) => c.y - minY + c.h));
+  const box = {
+    "--span": `${span}px`,
+    "--tall": `${tall}px`,
+  } as React.CSSProperties;
+
   return (
-    <div className="work work--collage">
+    <div className="work work--collage" style={box}>
       <h1 className="work__title">{heading}</h1>
       <ul className="work__collage">
         {cards.map((c, i) => (
           <li
             key={i}
             className="work__slot"
-            style={{ left: c.x, top: c.y, width: c.w }}
+            style={
+              {
+                left: c.x,
+                top: c.y,
+                width: c.w,
+                "--w": `${c.w}px`,
+                "--fx": span > c.w ? (c.x - minX) / (span - c.w) : 0,
+                "--dy": `${c.y - minY}px`,
+              } as React.CSSProperties
+            }
           >
             <button type="button" className="card" onClick={() => onOpen(i)}>
               {/* project image goes here */}
@@ -1197,11 +1334,19 @@ function CaseStudy({ study }: { study: Study }) {
       {study.kicker && <p className="study__kicker">{study.kicker}</p>}
       <p className="study__intro">{study.intro}</p>
 
-      {study.hero ? (
+      {study.hero || study.framed ? (
         <div className="study__top">
-          <div className="study__heroFrame">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="study__heroImg" src={study.hero} alt="" />
+          <div
+            className={
+              study.framed === "glow"
+                ? "study__heroFrame glowSquare"
+                : "study__heroFrame"
+            }
+          >
+            {study.hero && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="study__heroImg" src={study.hero} alt="" />
+            )}
           </div>
           {facts}
         </div>
@@ -1261,21 +1406,42 @@ function StudySection({ section: s }: { section: Section }) {
                     loading="lazy"
                   />
                 ))}
+                {Array.from({ length: row.slots ?? 0 }, (_, i) => (
+                  <span key={i} className="shot study__screen study__screenSlot" />
+                ))}
               </div>
             </div>
           ))}
         </div>
       )}
 
+      {s.tabs && <StudyTabs tabs={s.tabs} />}
+
       {s.moments && (
         <ol className="study__moments">
           {s.moments.map((m, i) => (
-            <li key={m.title} className="study__moment">
-              <div className="study__momentHead">
-                <span className="study__momentNum">({i + 1})</span>
-                <h3 className="study__momentTitle">{m.title}</h3>
+            <li
+              key={m.title}
+              className={m.image ? "study__moment study__moment--shot" : "study__moment"}
+            >
+              {m.image && (
+                <div className="glowSquare">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    className="glowSquare__img"
+                    src={m.image}
+                    alt={`${m.title} screen`}
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div className="study__momentText">
+                <div className="study__momentHead">
+                  <span className="study__momentNum">({i + 1})</span>
+                  <h3 className="study__momentTitle">{m.title}</h3>
+                </div>
+                <p className="study__value">{m.body}</p>
               </div>
-              <p className="study__value">{m.body}</p>
             </li>
           ))}
         </ol>
@@ -1306,5 +1472,64 @@ function StudySection({ section: s }: { section: Section }) {
         </div>
       ))}
     </section>
+  );
+}
+
+/* Tabbed panel — tabs across the top, copy left, a square screenshot right.
+   The copy and the screenshots are two separate tracks, each in its own
+   window, so picking a tab slides the text to the next text and the image
+   to the next image. The soft blue gradient sits on the image window, not
+   on the track, so it stays put behind the screens as they slide. */
+function StudyTabs({ tabs }: { tabs: { title: string; body: string; image: string }[] }) {
+  const [active, setActive] = useState(0);
+  const shift = { transform: `translateX(${-active * 100}%)` };
+
+  return (
+    <div className="tabs">
+      <div className="tabs__bar" role="tablist">
+        {tabs.map((t, i) => (
+          <button
+            key={t.title}
+            type="button"
+            role="tab"
+            className="tabs__tab"
+            aria-selected={i === active}
+            onClick={() => setActive(i)}
+          >
+            {t.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="tabs__panel">
+        <div className="tabs__window">
+          <div className="tabs__track" style={shift}>
+            {tabs.map((t, i) => (
+              <div
+                key={t.title}
+                className="tabs__text"
+                role="tabpanel"
+                aria-hidden={i !== active}
+                inert={i !== active}
+              >
+                <h3 className="tabs__title">{t.title}</h3>
+                <p className="study__value">{t.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="tabs__window tabs__media">
+          <div className="tabs__track" style={shift}>
+            {tabs.map((t, i) => (
+              <div key={t.title} className="tabs__shot" aria-hidden={i !== active}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="tabs__img" src={t.image} alt={`${t.title} screens`} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

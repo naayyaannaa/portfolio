@@ -903,6 +903,52 @@ a.accent:hover {
   border-bottom: 1px solid var(--ink);
 }
 
+/* an expanded work page keeps its deck layout, centred in the window */
+.is-expanded .work {
+  width: 1232px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Expanded collage (UI/UX, Other): the page is capped at --spread-x times
+   the cards' deck width and centred, and the cards get their own box,
+   centred both ways in what is left under the title. Each card sits
+   at its share (--fx) of the free space across, so the gaps open up as the
+   box widens; vertical offsets are stretched by --spread-y. Desktop only —
+   on mobile the cards are a plain column either way. */
+@media (min-width: 901px) {
+  .is-expanded .work--collage {
+    --spread-x: 1.3; /* the cards' box, as a multiple of their deck width */
+    --spread-y: 1.15;
+    --name: 40px; /* room under the lowest card for its name */
+    width: auto;
+    max-width: calc(var(--span) * var(--spread-x) + 128px);
+    height: auto;
+    min-height: 100%;
+    margin: 0 auto;
+    padding-left: 64px;
+    padding-right: 64px;
+  }
+
+  .is-expanded .work__collage {
+    position: relative;
+    width: 100%;
+    height: calc(var(--tall) * var(--spread-y) + var(--name));
+    /* auto on every side centres it in the flex column's leftover space */
+    margin: auto;
+  }
+
+  .is-expanded .work--collage .work__title {
+    margin-bottom: 48px;
+  }
+
+  .is-expanded .work__slot {
+    margin-top: 0;
+    left: calc(var(--fx) * (100% - var(--w))) !important;
+    top: calc(var(--dy) * var(--spread-y)) !important;
+  }
+}
+
 /* expand and minimize — bare pixel glyphs, no label */
 .iconbtn {
   appearance: none;
@@ -1190,6 +1236,195 @@ a.accent:hover {
   width: auto;
 }
 
+/* an empty screen waiting for its export — phone-ish, the kiosk's height */
+.study__screenSlot {
+  aspect-ratio: 9 / 16;
+}
+
+/* An outlined square with the soft blue glow behind a screenshot — Klik
+   AI's feature images and its hero panel. The glow matches the one behind
+   the platform tabs' screens. */
+.glowSquare {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 1px solid #5d5d5d;
+  background: var(--paper);
+}
+
+/* the glow: a softened square rather than a circle, so the square the image
+   sits in reads clearly */
+.glowSquare::before {
+  content: "";
+  position: absolute;
+  inset: 10%;
+  z-index: -1;
+  border-radius: 12%;
+  background: #c3d5ee;
+  filter: blur(36px);
+}
+
+.glowSquare > * {
+  position: relative;
+}
+
+.glowSquare__img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* A numbered row with an image: the square left, half the width, and the
+   number, title and copy right. No rules between these rows — the squares
+   already separate them. */
+/* doubled class: .study__moment's own columns come later in the file */
+.study__moment.study__moment--shot {
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+}
+
+.study__moment.study__moment--shot + .study__moment--shot {
+  border-top: 0;
+}
+
+/* a little shorter than square, so there is less empty glow above and
+   below the landscape screenshots */
+.study__moment--shot .glowSquare {
+  aspect-ratio: 1 / 0.85;
+  padding: 8px;
+}
+
+.study__moment--shot .study__momentText .study__value {
+  margin-top: 16px;
+}
+
+/* without an image, the text wrapper steps aside so the head and the copy
+   stay the row's two grid columns */
+.study__moment:not(.study__moment--shot) .study__momentText {
+  display: contents;
+}
+
+/* ---- tabbed panel (Klik AI's platform) ----
+   tabs share the width equally, each with its own rule; the chosen one is
+   bolder with a heavier rule. Below them a panel holds one pane at a time:
+   copy left, a square screenshot right, sliding sideways between tabs. */
+.tabs {
+  --media: 46%; /* the image square's share of the pane */
+  margin-top: 32px;
+}
+
+.tabs__bar {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  gap: 24px;
+}
+
+.tabs__tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0 4px 14px;
+  border-bottom: 1px solid var(--ink);
+  cursor: var(--cursor-hand);
+  font-family: var(--font);
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--ink);
+  text-align: center;
+  transition: border-color 200ms ease;
+}
+
+/* selected: a touch heavier than the light labels, not bold */
+.tabs__tab[aria-selected="true"] {
+  font-weight: 400;
+  box-shadow: inset 0 -1px 0 var(--ink);
+}
+
+.tabs__tab:hover,
+.tabs__tab:focus-visible {
+  outline: none;
+  color: #283eff; /* the deck's blue, off the Contact slide */
+}
+
+/* copy left, image square right — each column is its own sliding window */
+.tabs__panel {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr var(--media);
+  gap: 48px;
+  align-items: center;
+}
+
+/* clips its track, so only the current text or image shows */
+.tabs__window {
+  overflow: hidden;
+}
+
+.tabs__track {
+  display: flex;
+  align-items: center;
+  transition: transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.tabs__text,
+.tabs__shot {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* the pane's heading — light, like the deck's other big type, 28px */
+.tabs__title {
+  margin: 0 0 20px;
+  font-family: var(--font);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.32px;
+  color: var(--ink);
+}
+
+/* the square, with the soft blue glow behind the screens — on the window
+   itself, so it stays still while the images slide across it */
+.tabs__media {
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(
+    closest-side,
+    #c3d5ee 0%,
+    rgba(195, 213, 238, 0.55) 55%,
+    rgba(195, 213, 238, 0) 100%
+  );
+}
+
+.tabs__media .tabs__track {
+  height: 100%;
+}
+
+.tabs__shot {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.tabs__img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs__track {
+    transition: none;
+  }
+}
+
 /* ---- Key Design Moments ----
    numbered rows: number and title on the left, the why on the right, with
    rules only between rows — none above the first or below the last */
@@ -1248,7 +1483,7 @@ a.accent:hover {
 /* ---- sections ---- */
 
 .study__section {
-  margin-top: 64px;
+  margin-top: 120px;
 }
 
 /* the heading carries no bottom margin — each following block sets its own
@@ -1693,6 +1928,11 @@ a.accent:hover {
     padding: 20px 0 8px;
   }
 
+  .is-expanded .work {
+    width: auto;
+    margin: 0 20px;
+  }
+
   .work__title {
     font-size: 40px;
     letter-spacing: -0.4px;
@@ -1907,7 +2147,7 @@ a.accent:hover {
   }
 
   .study__section {
-    margin-top: 48px;
+    margin-top: 88px;
   }
 
   .study__heading {
@@ -1958,6 +2198,35 @@ a.accent:hover {
     gap: 28px;
   }
 
+  /* tabs shrink to fit three across; the panel stacks, the image square
+     on top */
+  .tabs__bar {
+    gap: 12px;
+  }
+
+  .tabs__tab {
+    font-size: 14px;
+    padding-bottom: 10px;
+  }
+
+  .tabs__panel {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .tabs__shot {
+    padding: 12px;
+  }
+
+  .tabs__media {
+    order: -1;
+  }
+
+  .tabs__title {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
   /* stage name above its strip */
   .study__screenRow {
     grid-template-columns: 1fr;
@@ -1977,6 +2246,16 @@ a.accent:hover {
     grid-template-columns: 1fr;
     gap: 12px;
     padding: 24px 0;
+  }
+
+  /* image square on top, text under it */
+  .study__moment.study__moment--shot {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .glowSquare {
+    padding: 12px;
   }
 
   .study__momentTitle {
@@ -2027,5 +2306,63 @@ a.accent:hover {
   .reel__row {
     --frame-closed: 72px;
     --media-closed: 130px;
+  }
+}
+
+/* ---- mobile: the page itself scrolls, not the slide ----
+   Mobile browsers only tuck their address bar away when the document
+   scrolls, not when a box inside it does. So on phones the slide grows to
+   its content and the window scrolls instead, with the header pinned at the
+   top and the slide picker pinned at the bottom, so the shell still looks
+   like a fixed viewport. An expanded case study is a fixed overlay with its
+   own scroll, as before, and locks the page behind it. */
+@media (max-width: 900px) {
+  html,
+  body {
+    height: auto;
+  }
+
+  body {
+    overflow: visible;
+  }
+
+  body:has(.is-expanded) {
+    overflow: hidden;
+  }
+
+  .frame {
+    height: auto;
+    min-height: 100dvh;
+  }
+
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .rail {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+  }
+
+  .stage {
+    flex: 1 0 auto;
+  }
+
+  .frame:not(.is-expanded) .slide {
+    max-height: none;
+  }
+
+  .frame:not(.is-expanded) .slide--full {
+    height: auto;
+    flex: 1 0 auto;
+  }
+
+  .frame:not(.is-expanded) .slide__scroll {
+    flex: none;
+    height: auto;
+    overflow: visible;
   }
 }
