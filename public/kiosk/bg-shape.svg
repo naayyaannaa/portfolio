@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1216 1216">
+  <!-- the green scalloped panel from the kiosk cover, squared up to fill the
+       panel: two notches top and bottom at the cover's proportions -->
+  <path fill="#008a6c" d="M0 0H193A70 70 0 0 1 263 70A70 70 0 0 1 333 0H516A70 70 0 0 1 586 70A70 70 0 0 1 656 0H1216V1216H656A70 70 0 0 1 586 1146A70 70 0 0 1 516 1216H333A70 70 0 0 1 263 1146A70 70 0 0 1 193 1216H0Z"/>
+</svg>

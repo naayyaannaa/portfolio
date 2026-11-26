@@ -803,6 +803,86 @@ a.accent:hover {
   transition: border-color 0.1s linear;
 }
 
+/* a card carrying its case study's cover — the header image, contained and
+   centred on the same backdrop as the study's hero panel */
+.card__media--cover {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.card__media--grain {
+  background-color: #efefef;
+  background-image: url("/noise.svg");
+}
+
+/* A study's backdrop shape (the kiosk's green scalloped panel), nearly
+   solid on an off-white ground. Used by the hero panel and its card. */
+.has-backdrop {
+  position: relative;
+  isolation: isolate;
+}
+
+/* doubled class so it beats the grey grain of .study__heroFrame and
+   .card__media--grain: an off-white ground under the green instead */
+.has-backdrop.has-backdrop {
+  background-color: #fbfbf9;
+  background-image: none;
+}
+
+/* the screens sit well inside the green, so the panel shows past them on
+   either side */
+.has-backdrop .card__cover,
+.has-backdrop .study__heroImg {
+  max-width: 78%;
+}
+
+.has-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 3% 0.5%;
+  z-index: -1;
+  background: var(--backdrop) center / 100% 100% no-repeat;
+  opacity: 0.8;
+}
+
+.card__tags {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #5d5d5d;
+}
+
+/* Klik AI's cover: the blue glow sits in the middle and fills most of the
+   square, fading out towards the border. Used by its card and by its case
+   study header. */
+.card__media--glow::before,
+.glowSquare.edgeGlow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 0;
+  /* three offset ellipses, so the glow is lopsided rather than a neat
+     square, strongest in the middle and fading pale towards the border */
+  background:
+    radial-gradient(ellipse 62% 52% at 40% 44%, #92b3e6 0%, transparent 78%),
+    radial-gradient(ellipse 48% 58% at 66% 62%, #a3bfea 0%, transparent 78%),
+    radial-gradient(ellipse 54% 36% at 58% 22%, #bccff0 0%, transparent 80%);
+  filter: blur(16px);
+}
+
+.card__cover {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 .card:hover .card__media,
 .card:focus-visible .card__media {
   border-color: var(--ink);
@@ -813,7 +893,7 @@ a.accent:hover {
 }
 
 .card__name {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font);
   font-size: 16px;
   font-weight: 400;
   line-height: 1.2;
@@ -918,8 +998,8 @@ a.accent:hover {
    on mobile the cards are a plain column either way. */
 @media (min-width: 901px) {
   .is-expanded .work--collage {
-    --spread-x: 1.3; /* the cards' box, as a multiple of their deck width */
-    --spread-y: 1.15;
+    --spread-x: 1.1; /* the cards' box, as a multiple of their deck width */
+    --spread-y: 1.03;
     --name: 40px; /* room under the lowest card for its name */
     width: auto;
     max-width: calc(var(--span) * var(--spread-x) + 128px);
@@ -1085,6 +1165,7 @@ a.accent:hover {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  border: 1px solid #5d5d5d; /* the same outline as the cards and glow squares */
   background-color: #efefef;
   background-image: url("/noise.svg"); /* faint fractal-noise grain, tiled */
 }
@@ -1239,6 +1320,53 @@ a.accent:hover {
 /* an empty screen waiting for its export — phone-ish, the kiosk's height */
 .study__screenSlot {
   aspect-ratio: 9 / 16;
+}
+
+/* Compact section (Klik's process sketches): copy runs the full width,
+   each row is a small label over a strip of short images, no dividers. */
+.study__section--compact .study__caption {
+  max-width: none;
+  font-size: 16px;
+}
+
+.study__section--compact .study__screens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  margin-top: 40px;
+}
+
+.study__section--compact .study__screenRow,
+.study__section--compact .study__screenRow:first-child,
+.study__section--compact .study__screenRow:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border-top: 0;
+  min-width: 0;
+}
+
+.study__section--compact .study__screenLabel {
+  align-self: flex-start;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-align: left;
+  color: var(--ink);
+}
+
+/* one black outline per group of sketches, straight on the edge, no padding */
+.study__section--compact .study__screenStrip {
+  gap: 12px;
+  align-self: flex-start;
+  max-width: 100%;
+  border: 1px solid var(--ink);
+}
+
+.study__section--compact .study__screen {
+  height: 220px;
 }
 
 /* An outlined square with the soft blue glow behind a screenshot — Klik

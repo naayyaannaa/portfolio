@@ -50,6 +50,9 @@ type Section = {
   lead?: string; // one large sentence
   body?: string; // supporting paragraph
   todo?: boolean;
+  /* tighter layout: full-width copy, screen rows stacked with a small
+     label above and short images, no dividers — for process sketches */
+  compact?: boolean;
   shot?: "hero" | "wide"; // a single placeholder box
   steps?: { step: string; caption: string }[]; // numbered grid, one shot each
   groups?: { label?: string; shots: number }[]; // labelled rows of shots
@@ -77,6 +80,10 @@ type Study = {
      is a hero image to put in it. "glow" swaps the grey grained panel for
      an outlined square with the blue glow, as on Klik AI's features. */
   framed?: boolean | "glow";
+  /* a faint shape laid under the grey grain of the hero panel and card */
+  backdrop?: string;
+  /* what I did, shown in square brackets under the card's name */
+  tags?: string[];
   facts: { label: string; value: string }[];
   sections: Section[];
 };
@@ -174,6 +181,8 @@ const KIOSK: Study = {
   intro:
     "A self-service digital kiosk interface, enabling customers to browse smartphones and other devices, compare models side by side, and complete purchases directly at the kiosk.",
   hero: "/kiosk/hero.png",
+  backdrop: "/kiosk/bg-shape.svg", // the green scalloped panel from the cover
+  tags: ["UI/UX", "Research"],
   facts: [
     { label: "Role", value: "UI/UX Design · Research" },
     { label: "Timeline", value: "3 months" },
@@ -236,13 +245,16 @@ const KIOSK: Study = {
 /* Klik AI — AI that builds, lists & grows an ecommerce store. Laid out
    on the kiosk's template. The full product is under NDA, so instead of a
    Final Product section it walks through the platform (tabbed) and its AI
-   features, with a screenshot each. Screens live in public/klik. Process,
-   the design moments and the reflections are todo until written up. */
+   features, with a screenshot each, then pages from the sketchbook notes
+   (media/klik notes.pdf, exported to public/klik/process). Screens live in
+   public/klik. */
 const KLIK: Study = {
   date: "April 2025",
   intro:
-    "An ecommerce management tool that uses AI to take care of everything end to end, from cataloging, product photos, content and pricing to listing across multiple platforms, so a brand can build, list and grow its store from one place.",
+    "An ecommerce management tool that brings cataloging, product photos, content, pricing and listing across multiple platforms into one place. It uses AI to make the process less of a hassle and to remove the redundant steps, so a brand can build, list and grow its store more easily.",
+  hero: "/klik/hero.png", // media/Group 64.png
   framed: "glow",
+  tags: ["UI/UX", "Research", "Design System"],
   facts: [
     { label: "Role", value: "Designer" },
     { label: "Timeline", value: "8 months" },
@@ -263,15 +275,6 @@ const KLIK: Study = {
           value:
             "A tool that automates it all, removing the manual choking point in fast-fashion ecommerce.",
         },
-      ],
-    },
-    {
-      heading: "Process",
-      todo: true,
-      body: "How you got here: the research and notes, the flows mapped in FigJam, early wireframes and how they changed. A few annotated images do more than a lot of text.",
-      groups: [
-        { label: "Research & Notes", shots: 2 },
-        { label: "Wireframes", shots: 3 },
       ],
     },
     {
@@ -321,14 +324,41 @@ const KLIK: Study = {
       ],
     },
     {
+      heading: "Snippets from my Process",
+      compact: true,
+      body: "I studied existing commerce back ends and POS tools to shape a multi-module backend, from vendor purchases and warehousing to marketplace integration and access control. Customer and client research decided what each dashboard leads with, and it all started on paper before moving into Figma.",
+      screens: [
+        { label: "Dashboard & Data", images: ["/klik/process/notes-1.jpg"] },
+        {
+          label: "Collection AI & Roles",
+          images: ["/klik/process/notes-2.jpg", "/klik/process/notes-3.jpg"],
+        },
+        {
+          label: "Wireframes",
+          images: ["/klik/process/notes-4.jpg", "/klik/process/notes-5.jpg"],
+        },
+      ],
+    },
+    {
       heading: "Key Design Moments",
-      todo: true,
-      body: "Three or four decisions that shaped the product: what made automating a whole catalog feel trustworthy, and where people still need to step in and review.",
+      moments: [
+        {
+          title: "Designing as a user too",
+          body: "Klik was designed to become a product later on, but it was built and tested with the company's own jewellery brand first. So I got to use it day to day myself and work closely with the operations staff. That gave me a much better understanding of the ecommerce process and helped me design a better product.",
+        },
+        {
+          title: "Getting the logistics right",
+          body: "There were lots of challenges along the way, but the logistics were the most frustrating. We had a lot of inventory, and coming up with a way to manage every SKU and automate certain processes was a real challenge.",
+        },
+        {
+          title: "Figuring out AI as we went",
+          body: "At this stage, using AI in industry practice was still new. The team and I had to do a lot of research and trial and error to find a process that worked and to figure out which tools to use, like which AI was best for image generation.",
+        },
+      ],
     },
     {
       heading: "Reflections",
-      todo: true,
-      body: "How it landed, what surprised you, and what you would push further given another pass.",
+      body: "This product kept developing throughout my entire time at the company. More than the design itself, what I gained the most was learning an industry that was completely new to me, and I've carried that knowledge, and the way I learned it, into my other projects. For the operations team, it changed how the whole ecommerce process ran. Work that used to be done by hand, like writing listings, organising photoshoots, entering invoice details and updating every platform one by one, could now be done in a few steps, which made the whole process much faster and more efficient.",
     },
   ],
 };
@@ -339,6 +369,7 @@ const KLIK: Study = {
 const BOUNCE: Study = {
   kicker: "UI/UX Design · Graphic Design · Sportswear brand",
   date: "June 2025", // TODO placeholder — real Behance publish date needed
+  tags: ["UI/UX", "Graphic Design"],
   intro:
     "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
   facts: [
@@ -1118,6 +1149,16 @@ function ReelSlide({ heading, works }: { heading: string; works: Work[] }) {
 
 /* Collage layout — each card is placed and sized individually, measured
    off the deck. Used by UI/UX and Other. */
+/* Puts a study's backdrop shape under the grey grain (see .has-backdrop). */
+function backdropStyle(
+  backdrop: string | undefined,
+  style: React.CSSProperties = {},
+): React.CSSProperties {
+  return backdrop
+    ? ({ ...style, "--backdrop": `url("${backdrop}")` } as React.CSSProperties)
+    : style;
+}
+
 function CollageSlide({
   heading,
   cards,
@@ -1160,11 +1201,30 @@ function CollageSlide({
             }
           >
             <button type="button" className="card" onClick={() => onOpen(i)}>
-              {/* project image goes here */}
-              <span className="card__media" style={{ height: c.h }} />
+              {/* the case study's cover, framed the same way as its header */}
+              <span
+                className={
+                  !c.study?.hero
+                    ? "card__media"
+                    : c.study.framed === "glow"
+                      ? "card__media card__media--cover card__media--glow"
+                      : c.study.backdrop
+                      ? "card__media card__media--cover card__media--grain has-backdrop"
+                      : "card__media card__media--cover card__media--grain"
+                }
+                style={backdropStyle(c.study?.backdrop, { height: c.h })}
+              >
+                {c.study?.hero && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img className="card__cover" src={c.study.hero} alt="" />
+                )}
+              </span>
               <span className="card__name">
                 ({i + 1}) {c.name}
               </span>
+              {c.study?.tags && (
+                <span className="card__tags">[{c.study.tags.join(" · ")}]</span>
+              )}
             </button>
           </li>
         ))}
@@ -1339,9 +1399,12 @@ function CaseStudy({ study }: { study: Study }) {
           <div
             className={
               study.framed === "glow"
-                ? "study__heroFrame glowSquare"
-                : "study__heroFrame"
+                ? "study__heroFrame glowSquare edgeGlow"
+                : study.backdrop
+                  ? "study__heroFrame has-backdrop"
+                  : "study__heroFrame"
             }
+            style={backdropStyle(study.backdrop)}
           >
             {study.hero && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -1366,7 +1429,7 @@ function CaseStudy({ study }: { study: Study }) {
 
 function StudySection({ section: s }: { section: Section }) {
   return (
-    <section className="study__section">
+    <section className={s.compact ? "study__section study__section--compact" : "study__section"}>
       <h2 className="study__heading">
         {s.heading}
         {s.todo && <span className="study__todo">to write</span>}
