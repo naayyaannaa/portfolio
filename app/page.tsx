@@ -55,7 +55,8 @@ type Section = {
   compact?: boolean;
   shot?: "hero" | "wide"; // a single placeholder box
   steps?: { step: string; caption: string }[]; // numbered grid, one shot each
-  groups?: { label?: string; shots: number }[]; // labelled rows of shots
+  /* labelled rows of shots: real `images`, or `shots` empty placeholders */
+  groups?: { label?: string; shots?: number; images?: string[] }[];
   context?: { label: string; value: string }[]; // side-by-side columns
   /* labelled rows of real screens, label left, screens scrolling right */
   /* `slots` adds that many empty placeholder screens after the images */
@@ -76,12 +77,18 @@ type Study = {
   date?: string; // sits beside the detail title
   intro: string;
   hero?: string; // image in the top .shot--hero slot; blank box if absent
+  /* a live embed (e.g. a Figma prototype) under the hero, with its heading */
+  embed?: string;
+  embedTitle?: string;
   /* the kiosk's layout — hero panel left, facts right — even before there
      is a hero image to put in it. "glow" swaps the grey grained panel for
      an outlined square with the blue glow, as on Klik AI's features. */
   framed?: boolean | "glow";
   /* a faint shape laid under the grey grain of the hero panel and card */
   backdrop?: string;
+  /* "dusk" swaps the grey grain of the hero panel and card for a white
+     square with an orange caustic (public/bounce/caustic.svg) */
+  grain?: "dusk";
   /* what I did, shown in square brackets under the card's name */
   tags?: string[];
   facts: { label: string; value: string }[];
@@ -182,11 +189,11 @@ const KIOSK: Study = {
     "A self-service digital kiosk interface, enabling customers to browse smartphones and other devices, compare models side by side, and complete purchases directly at the kiosk.",
   hero: "/kiosk/hero.png",
   backdrop: "/kiosk/bg-shape.svg", // the green scalloped panel from the cover
-  tags: ["UI/UX", "Research"],
+  tags: ["UI/UX", "Product Design", "Research"],
   facts: [
-    { label: "Role", value: "UI/UX Design · Research" },
+    { label: "Role", value: "Design · Research" },
     { label: "Timeline", value: "3 months" },
-    { label: "Tools", value: "Figma, FigJam" },
+    { label: "Tools", value: "Figma · FigJam" },
   ],
   sections: [
     {
@@ -254,11 +261,11 @@ const KLIK: Study = {
     "An ecommerce management tool that brings cataloging, product photos, content, pricing and listing across multiple platforms into one place. It uses AI to make the process less of a hassle and to remove the redundant steps, so a brand can build, list and grow its store more easily.",
   hero: "/klik/hero.png", // media/Group 64.png
   framed: "glow",
-  tags: ["UI/UX", "Research", "Design System"],
+  tags: ["UI/UX", "Product Design", "Research"],
   facts: [
-    { label: "Role", value: "Designer" },
+    { label: "Role", value: "Design · Research" },
     { label: "Timeline", value: "8 months" },
-    { label: "Tools", value: "Figma, FigJam, ChatGPT, Gemini" },
+    { label: "Tools", value: "Figma · FigJam · ChatGPT · Gemini" },
   ],
   sections: [
     {
@@ -363,89 +370,83 @@ const KLIK: Study = {
   ],
 };
 
-/* The Bounce Factor — the Behance gallery is only a hero, a graphics board
-   and a sign-off, so the written sections below are marked todo: they are
-   prompts for Nayana to fill in, not claims about work already done. */
+/* The Bounce Factor — the description, the live Figma prototype, and a
+   brand elements section still to be filled in. */
 const BOUNCE: Study = {
   kicker: "UI/UX Design · Graphic Design · Sportswear brand",
-  date: "June 2025", // TODO placeholder — real Behance publish date needed
-  tags: ["UI/UX", "Graphic Design"],
+  date: "March 2024",
+  tags: ["UI/UX", "Graphic Design", "Branding"],
   intro:
     "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
+  embedTitle: "Figma Prototype",
+  embed:
+    "https://embed.figma.com/proto/ZJhY2s8cxKmNzWW0a7ixwq/The-Bounce-Factor--Copy-?node-id=2009-1515&scaling=scale-down-width&content-scaling=fixed&page-id=2009%3A1514&starting-point-node-id=2009%3A1515&show-proto-sidebar=0&embed-host=share",
+  hero: "/bounce/hero.png", // media/tbf.png
+  grain: "dusk",
   facts: [
-    { label: "Brand", value: "The Bounce Factor (thebouncefactor.in)" },
-    { label: "Discipline", value: "UI/UX Design, Graphic Design" },
-    {
-      label: "Deliverables",
-      value:
-        "Storefront website, social media creatives, jersey design and product brochure.",
-    },
+    { label: "Role", value: "UI/UX Design · Graphic Design" },
+    { label: "Timeline", value: "2 weeks" },
+    { label: "Tools", value: "Figma · Photoshop" },
   ],
   sections: [
     {
-      heading: "The Challenge",
-      todo: true,
-      body: "What was hard about this one? Name the problem the brand had before the redesign: teams could not picture a custom kit before ordering, the old site did not convert, the brand had no consistent visual language across channels.",
-    },
-    {
-      heading: "Research",
-      todo: true,
-      body: "What did you look at before designing? Competitor teardowns, what team captains actually ask for when ordering kit, existing sportswear storefronts. Note anything that changed your direction.",
-      shot: "wide",
-    },
-    {
-      heading: "Who It's For",
-      todo: true,
-      body: "One or two short profiles: the team captain ordering twenty kits on a deadline, the individual player after one custom jersey. What each needs from the site.",
-      groups: [{ shots: 2 }],
-    },
-    {
-      heading: "Information Architecture",
-      todo: true,
-      body: "Sitemap or flow diagram: how someone gets from landing to a finished custom order.",
-      shot: "wide",
-    },
-    {
-      heading: "Wireframes",
-      todo: true,
-      body: "Early low-fidelity layouts before the visual design landed.",
-      groups: [{ shots: 3 }],
-    },
-    {
-      heading: "Design System",
-      todo: true,
-      body: "Type scale, colour, buttons and cards: the pieces the site is built from.",
-      shot: "wide",
-    },
-    {
-      heading: "The Website",
-      lead: "Gear that matches your hustle.",
-      body: "Customize your jersey with high-quality, performance-ready designs made for your game.",
-      shot: "hero",
-    },
-    {
-      heading: "Graphics",
-      body: "Social Media · Jersey Design · Product Brochure",
+      heading: "Brand Elements",
+      body: "Designs made around the brand's jerseys, used as promotional material and as posts on its social media.",
       groups: [
-        { label: "Social Media", shots: 3 },
-        { label: "Jersey Design", shots: 3 },
-        { label: "Product Brochure", shots: 2 },
+        {
+          label: "Basketball",
+          images: [
+            "/bounce/basketball-blue.png",
+            "/bounce/basketball-floral.png",
+            "/bounce/basketball-pink.png",
+          ],
+        },
+        {
+          label: "Football",
+          images: [
+            "/bounce/football-blue.png",
+            "/bounce/football-red.png",
+            "/bounce/football-green.png",
+          ],
+        },
       ],
-    },
-    {
-      heading: "Outcome",
-      todo: true,
-      body: "How did it land? Anything measurable is ideal (orders, enquiries, time to place an order), but a short honest reflection on what you would change works too.",
     },
   ],
 };
 
+/* Zenith — a landing page, laid out like The Bounce Factor: description,
+   cover with the facts, then the live Figma prototype. */
+const ZENITH: Study = {
+  date: "January 2026",
+  tags: ["UI/UX", "Website Design"],
+  intro:
+    "Zenith is a fractional CFO and outsourced financial services firm. I headed the design team, made up of a junior designer, a copywriter and an SEO specialist, and together we designed the complete website, from the landing page to services, contact and every page in between.",
+  hero: "/zenith/hero.png", // media/zenith.png, on the grey grain
+  facts: [
+    { label: "Role", value: "Head of Design" },
+    { label: "Timeline", value: "2 months" },
+    { label: "Tools", value: "Figma · Photoshop · Claude Code" },
+  ],
+  embedTitle: "Figma Prototype",
+  embed:
+    "https://embed.figma.com/proto/8vns8KbMFmbzzXHC6Y8bJS/Zenith-Landing-Page?node-id=3001-7733&scaling=scale-down-width&content-scaling=fixed&page-id=3001%3A3414&starting-point-node-id=3001%3A7733&show-proto-sidebar=0&embed-host=share",
+  sections: [],
+};
+
 /* UI/UX gets its own copy of the collage so cards can carry case studies
    without changing the Other slide, which shares the same layout. */
-const UIUX_CARDS: CardBox[] = COLLAGE.map((c, i) => {
+/* extra room between the first row of UI/UX cards and the second, whose
+   tags sit lower now that every top-row card carries a study */
+const UIUX_ROW_GAP = 64;
+
+const UIUX_CARDS: CardBox[] = COLLAGE.map((box, i) => {
+  const c = i >= 3 ? { ...box, y: box.y + UIUX_ROW_GAP } : box;
   if (i === 0) return { ...c, name: "Klik AI", study: KLIK };
+  if (i === 1) return { ...c, name: "Zenith Website", study: ZENITH };
   if (i === 2) return { ...c, name: "Product Discovery Kiosk", study: KIOSK };
-  if (i === 3) return { ...c, name: "The Bounce Factor", study: BOUNCE };
+  /* landscape, to suit its wide website cover */
+  if (i === 3)
+    return { ...c, w: 340, h: 250, name: "The Bounce Factor", study: BOUNCE };
   return c;
 });
 
@@ -1210,6 +1211,8 @@ function CollageSlide({
                       ? "card__media card__media--cover card__media--glow"
                       : c.study.backdrop
                       ? "card__media card__media--cover card__media--grain has-backdrop"
+                      : c.study.grain === "dusk"
+                      ? "card__media card__media--cover card__media--grain grain--dusk"
                       : "card__media card__media--cover card__media--grain"
                 }
                 style={backdropStyle(c.study?.backdrop, { height: c.h })}
@@ -1402,7 +1405,9 @@ function CaseStudy({ study }: { study: Study }) {
                 ? "study__heroFrame glowSquare edgeGlow"
                 : study.backdrop
                   ? "study__heroFrame has-backdrop"
-                  : "study__heroFrame"
+                  : study.grain === "dusk"
+                    ? "study__heroFrame grain--dusk"
+                    : "study__heroFrame"
             }
             style={backdropStyle(study.backdrop)}
           >
@@ -1418,6 +1423,23 @@ function CaseStudy({ study }: { study: Study }) {
           <span className="shot shot--hero" />
           {facts}
         </>
+      )}
+
+      {study.embed && (
+        <section className="study__section">
+          <div className="study__embedHead">
+            {study.embedTitle && <h2 className="study__heading">{study.embedTitle}</h2>}
+            <p className="study__embedHint">*prototype is interactive</p>
+          </div>
+          <div className="study__embed">
+            <iframe
+              src={study.embed}
+              title={study.embedTitle ?? "Prototype"}
+              allowFullScreen
+              loading="lazy"
+            />
+          </div>
+        </section>
       )}
 
       {study.sections.map((s) => (
@@ -1528,7 +1550,17 @@ function StudySection({ section: s }: { section: Section }) {
         <div key={g.label ?? gi} className="study__group">
           {g.label && <p className="study__groupName">{g.label}</p>}
           <div className="study__row">
-            {Array.from({ length: g.shots }, (_, i) => (
+            {g.images?.map((src) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={src}
+                className="study__groupImg"
+                src={src}
+                alt={g.label ?? ""}
+                loading="lazy"
+              />
+            ))}
+            {Array.from({ length: g.shots ?? 0 }, (_, i) => (
               <span key={i} className="shot shot--screen" />
             ))}
           </div>

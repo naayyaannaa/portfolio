@@ -834,11 +834,81 @@ a.accent:hover {
   background-image: none;
 }
 
-/* the screens sit well inside the green, so the panel shows past them on
-   either side */
+/* the screens sit just inside the green, clear of the notches, with only a
+   thin band of panel showing around them */
 .has-backdrop .card__cover,
 .has-backdrop .study__heroImg {
-  max-width: 78%;
+  max-width: 86%;
+  max-height: 84%;
+}
+
+.has-backdrop.card__media--cover {
+  padding: 0;
+}
+
+/* The Bounce Factor's cover: a white square with an orange caustic over it,
+   lines highlighted in white and shadowed in black — see caustic.svg. No
+   grain. Doubled class so it beats .study__heroFrame and
+   .card__media--grain. */
+.grain--dusk.grain--dusk {
+  background: #ffffff url("/bounce/caustic.svg") center / cover no-repeat;
+}
+
+/* room on the card for the caustic to show around the cover */
+.grain--dusk.card__media--cover {
+  padding: 24px 32px;
+}
+
+/* lifts the cover gently off the panel */
+.grain--dusk .card__cover,
+.grain--dusk .study__heroImg {
+  box-shadow: 0 12px 32px rgba(43, 20, 6, 0.22);
+}
+
+/* the kiosk's hero takes most of the row, the facts a narrower column */
+.study__top:has(> .has-backdrop) {
+  grid-template-columns: 3fr 2fr;
+}
+
+/* stays square: the green panel's notches are drawn for a square, so any
+   other shape shrinks the green inside the frame */
+.has-backdrop.study__heroFrame {
+  aspect-ratio: 1 / 1;
+  padding: 0;
+}
+
+/* a live Figma prototype — the same width as the copy, and tall */
+/* narrower than the copy and centred, so there is room either side to
+   scroll the page past it without the prototype catching the wheel */
+.study__embed {
+  margin: 40px auto 0;
+  max-width: 82%;
+  height: max(480px, 72vh);
+  border: 1px solid #000000;
+}
+
+/* the section heading, with a small grey note at the far right. */
+.study__embedHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.study__embedHint {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #5d5d5d;
+}
+
+.study__embed iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .has-backdrop::before {
@@ -1727,6 +1797,14 @@ a.accent:hover {
   gap: 32px;
 }
 
+/* a real image in a group row, e.g. The Bounce Factor's jersey posts */
+.study__groupImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #000000;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Classic stepper scrollbar — far right, full height of the section  */
 /* ------------------------------------------------------------------ */
@@ -2313,6 +2391,15 @@ a.accent:hover {
 
   .study__heroFrame {
     padding: 32px;
+  }
+
+  .study__top:has(> .has-backdrop) {
+    grid-template-columns: 1fr;
+  }
+
+  .study__embed {
+    max-width: 88%;
+    height: max(420px, 62vh);
   }
 
   .study__top .study__fact {

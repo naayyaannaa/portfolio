@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+  <!-- The Bounce Factor's cover: a white ground, soft orange pools, and
+       flowing caustic lines, highlighted in white and shadowed in black -->
+  <defs>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="70"/>
+    </filter>
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <filter id="dark" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+    <filter id="line" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
+  </defs>
+
+  <rect width="1000" height="1000" fill="#ffffff"/>
+
+  <!-- orange pools -->
+  <g filter="url(#soft)">
+    <ellipse cx="640" cy="560" rx="380" ry="260" fill="#f08a24" opacity="0.75"/>
+    <ellipse cx="300" cy="260" rx="260" ry="180" fill="#f6a94f" opacity="0.6"/>
+    <ellipse cx="820" cy="180" rx="200" ry="160" fill="#e8761a" opacity="0.5"/>
+    <ellipse cx="260" cy="820" rx="260" ry="170" fill="#f39a3a" opacity="0.55"/>
+    <!-- a little depth in the corners -->
+    <ellipse cx="60" cy="980" rx="160" ry="120" fill="#2b1406" opacity="0.4"/>
+    <ellipse cx="980" cy="40" rx="140" ry="110" fill="#2b1406" opacity="0.28"/>
+  </g>
+
+  <!-- black shadow lines — only a stretch of each curve shows -->
+  <g fill="none" stroke="#2a1405" stroke-width="6" stroke-linecap="round" opacity="0.32" filter="url(#dark)">
+    <path d="M -20 300 C 100 280, 200 380, 230 520 S 180 760, 40 860" pathLength="100" stroke-dasharray="45 155" stroke-dashoffset="-20"/>
+    <path d="M 400 1020 C 440 880, 520 760, 680 740 S 940 820, 1020 900" pathLength="100" stroke-dasharray="40 160" stroke-dashoffset="-30"/>
+    <path d="M 760 -20 C 720 120, 760 240, 900 260 S 1020 180, 1020 120" pathLength="100" stroke-dasharray="45 155" stroke-dashoffset="-25"/>
+  </g>
+
+  <!-- white highlight lines: a wide soft glow, then the bright core -->
+  <g id="caustic" fill="none" stroke-linecap="round">
+    <path d="M -20 470 C 110 440, 170 320, 160 200 S 230 -10, 330 -30" pathLength="100" stroke-dasharray="40 160" stroke-dashoffset="-35"/>
+    <path d="M 280 -20 C 320 200, 320 380, 460 450 S 700 420, 690 290 S 590 60, 560 -20" pathLength="100" stroke-dasharray="35 165" stroke-dashoffset="-30"/>
+    <path d="M -20 760 C 150 680, 300 640, 520 660 S 900 600, 1020 540" pathLength="100" stroke-dasharray="35 165" stroke-dashoffset="-40"/>
+    <path d="M 560 -20 C 620 120, 780 220, 880 300 S 1000 380, 1020 300" pathLength="100" stroke-dasharray="40 160" stroke-dashoffset="-30"/>
+    <path d="M 120 1020 C 180 900, 240 820, 380 820 S 560 900, 600 1020" pathLength="100" stroke-dasharray="45 155" stroke-dashoffset="-25"/>
+    <path d="M 1020 760 C 900 800, 820 920, 840 1020" pathLength="100" stroke-dasharray="50 150" stroke-dashoffset="-25"/>
+    <!-- short ones in the bands the cover image leaves clear -->
+    <path d="M 500 70 C 580 120, 690 130, 800 95"/>
+    <path d="M 870 50 C 900 110, 950 150, 1000 150"/>
+    <path d="M 600 880 C 680 835, 800 840, 900 905"/>
+    <path d="M 30 905 C 80 865, 150 855, 215 885"/>
+  </g>
+  <use href="#caustic" stroke="#ffffff" stroke-width="18" opacity="0.5" filter="url(#glow)"/>
+  <use href="#caustic" stroke="#ffffff" stroke-width="4" opacity="0.95" filter="url(#line)"/>
+</svg>
