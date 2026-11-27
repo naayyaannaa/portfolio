@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Ribbon — the "File / Home / Edit" strip                            */
@@ -84,6 +84,27 @@ type Section = {
   steps?: { step: string; caption: string }[]; // numbered grid, one shot each
   /* labelled rows of shots: real `images`, or `shots` empty placeholders */
   groups?: { label?: string; shots?: number; images?: string[] }[];
+  /* full screenshots one under another, as wide as the Figma embed */
+  stack?: string[];
+  /* rows of images, as wide as the embed: one image fills the row, two
+     sit side by side */
+  rows?: string[][];
+  /* logo lockups by use: a small label over a rule, the logos in a row
+     underneath. `small` is for the long one-line lockups. */
+  uses?: { label: string; images: string[]; small?: boolean }[];
+  /* rows of images all at one height, across every row, each image as
+     wide as its own shape (w and h are the file's pixel size). A row can
+     carry a heading, an image its own label above it. */
+  figRows?: {
+    label?: string;
+    items: { src: string; w: number; h: number; label?: string }[];
+  }[];
+  /* a logo sheet: one column per variant, one row per colourway; a `dark`
+     row sits on black, for the white versions */
+  logos?: {
+    columns: string[];
+    rows: { label: string; dark?: boolean; images: string[] }[];
+  };
   context?: { label: string; value: string }[]; // side-by-side columns
   /* labelled rows of real screens, label left, screens scrolling right */
   /* `slots` adds that many empty placeholder screens after the images */
@@ -119,9 +140,9 @@ type Study = {
   /* a faint shape laid under the grey grain of the hero panel and card */
   backdrop?: string;
   /* "dusk" swaps the grey grain of the hero panel and card for a white
-     square with an orange caustic (public/bounce/caustic.svg); "aura" for
+     square of yellow and orange caustic light (public/bounce/caustic.jpg); "aura" for
      a soft pink and blue glow, no grain */
-  grain?: "dusk" | "aura";
+  grain?: "dusk" | "aura" | "dots" | "sand";
   /* a star sticker stuck over the top right corner of the card */
   sticker?: string;
   /* what I did, shown in square brackets under the card's name */
@@ -152,54 +173,62 @@ type Slide = {
   cards?: CardBox[];
 };
 
-/* Blysk Handcrafted — the Behance gallery is gated past the preview, so the
-   only things stated as fact below are what the page itself lists: the brand,
-   the discipline, the tool and the publish date. Everything written is marked
-   todo, the same way BOUNCE handles it — prompts for Nayana, not claims. */
+/* Blysk Handcrafted — laid out like the others: description, the cover with
+   the facts, then the logo, the packaging and the marketing assets. Files
+   live in public/blysk (from media/blysk logo, packaging and marketing). */
 const BLYSK: Study = {
-  kicker: "Branding · Handcrafted goods",
   date: "August 2025",
+  tags: ["Branding", "Package Design", "Marketing"],
   intro:
-    "Brand identity for Blysk Handcrafted, a maker of handcrafted goods, built out in Figma from the mark through to the applied system.",
+    "Blysk Handcrafted is a jewelry brand rooted in craftsmanship and creativity, offering distinguished pieces. I developed a cohesive visual identity that reflects the brand’s essence of craftsmanship and elegance. My work included designing the logo, packaging, and Amazon seller marketing assets to establish a consistent and memorable brand presence. The goal was to balance elegance with accessibility, creating a look and feel that resonates with modern jewelry buyers while standing out in a competitive marketplace.",
+  hero: "/blysk/cover.png", // media/blysk cover.png
+  grain: "sand",
   facts: [
-    { label: "Brand", value: "Blysk Handcrafted" },
-    { label: "Discipline", value: "Branding" },
-    { label: "Tools", value: "Figma" },
+    { label: "Role", value: "Branding · Package Design · Marketing" },
+    { label: "Timeline", value: "2 weeks" },
+    { label: "Tools", value: "Photoshop · Figma" },
   ],
   sections: [
     {
-      heading: "The Brief",
-      todo: true,
-      body: "What was Blysk asking for, and what did handcrafted have to mean visually? Name the starting point: a new brand, a rename, or an identity that had outgrown itself.",
+      heading: "Logo",
+      uses: [
+        {
+          label: "Primary Use",
+          images: ["/blysk/logo-navy.svg", "/blysk/logo-gold.svg"],
+        },
+        {
+          label: "Secondary Use",
+          small: true,
+          images: ["/blysk/secondary-navy.svg", "/blysk/secondary-gold.svg"],
+        },
+      ],
     },
     {
-      heading: "Direction",
-      todo: true,
-      body: "The references and the thinking behind the look: where the warmth comes from, and what you deliberately steered away from.",
-      shot: "wide",
+      heading: "Packaging",
+      figRows: [
+        {
+          items: [
+            { label: "Packaging Die-line", src: "/blysk/die-line.png", w: 1002, h: 725 },
+            { label: "Packaging Design", src: "/blysk/packaging.png", w: 1002, h: 726 },
+          ],
+        },
+        {
+          label: "Final Product",
+          items: [
+            { src: "/blysk/package-1.jpg", w: 1046, h: 918 },
+            { src: "/blysk/package-2.jpg", w: 1170, h: 1635 },
+          ],
+        },
+      ],
     },
     {
-      heading: "The Mark",
-      todo: true,
-      body: "The logo, its construction and the variants it ships in: primary, stacked, and whatever survives at small sizes.",
-      groups: [{ shots: 2 }],
-    },
-    {
-      heading: "Identity System",
-      todo: true,
-      body: "Type, colour and the supporting elements, the pieces that let the brand hold together across things you did not design yourself.",
-      shot: "wide",
-    },
-    {
-      heading: "Applications",
-      todo: true,
-      body: "The identity in use: packaging, labels, social and anything physical the handcrafted line called for.",
-      groups: [{ label: "Applications", shots: 3 }],
-    },
-    {
-      heading: "Outcome",
-      todo: true,
-      body: "How it landed, and what you would push further given another pass.",
+      heading: "Marketing Assets",
+      rows: [
+        ["/blysk/marketing-1.png"],
+        ["/blysk/marketing-2.png", "/blysk/marketing-3.png"],
+        ["/blysk/marketing-4.png"],
+        ["/blysk/marketing-5.png", "/blysk/marketing-6.png"],
+      ],
     },
   ],
 };
@@ -257,6 +286,13 @@ const KIOSK: Study = {
       ],
     },
     {
+      heading: "Snippets from my Process",
+      compact: true,
+      todo: true,
+      body: "Sketches, flows and early wireframes from the kiosk, and a line on what each one shows.",
+      screens: [{ label: "Process", images: [], slots: 3 }],
+    },
+    {
       heading: "Key Design Moments",
       moments: [
         {
@@ -291,7 +327,7 @@ const KIOSK: Study = {
    (media/klik notes.pdf, exported to public/klik/process). Screens live in
    public/klik. */
 const KLIK: Study = {
-  date: "April 2025",
+  date: "February 2025",
   intro:
     "An ecommerce management tool that brings cataloging, product photos, content, pricing and listing across multiple platforms into one place. It uses AI to make the process less of a hassle and to remove the redundant steps, so a brand can build, list and grow its store more easily.",
   hero: "/klik/hero.png", // media/Group 64.png
@@ -408,8 +444,7 @@ const KLIK: Study = {
 /* The Bounce Factor — the description, the live Figma prototype, and a
    brand elements section still to be filled in. */
 const BOUNCE: Study = {
-  kicker: "UI/UX Design · Graphic Design · Sportswear brand",
-  date: "March 2024",
+  date: "March 2025",
   tags: ["UI/UX", "Graphic Design", "Branding"],
   intro:
     "A dynamic sportswear brand bringing team spirit to life with custom-made jerseys designed for performance and identity.",
@@ -494,27 +529,81 @@ const MIXTAPE: Study = {
   ],
 };
 
+/* Midas — the description, the cover with the facts, then the dashboard
+   and the landing page as full screens, and a reflection to close. */
+const MIDAS: Study = {
+  date: "April 2026",
+  tags: ["UI/UX", "Product", "Logo Design", "Dev"],
+  intro:
+    "Midas is a product developed by Zenith. It's an AI CFO that connects a company's financial, operational and growth data in one place, so they can see what breaks first and how to prevent it. I worked with the dev team to design the dashboard and the landing page, and also designed the logo. With the help of Claude Code and the dev team, I did the frontend development myself.",
+  hero: "/midas/hero.png", // media/midas cover.png
+  grain: "dots",
+  facts: [
+    { label: "Role", value: "UI/UX · Frontend Dev · Graphic Design" },
+    { label: "Timeline", value: "8 months" },
+    { label: "Tools", value: "Claude Code · Figma · FigJam · Photoshop" },
+  ],
+  sections: [
+    {
+      heading: "Logo Design",
+      body: "The mark is a spiral, drawn to feel like gold being worked into shape, and it is paired with a serif wordmark. It comes in four versions, the mark, the wordmark, and horizontal and vertical lockups, each in gold, black and white so it works on any background.",
+      logos: {
+        columns: ["Mark", "Wordmark", "Horizontal", "Vertical"],
+        rows: (["gold", "black", "white"] as const).map((c) => ({
+          label: c[0].toUpperCase() + c.slice(1),
+          dark: c === "white",
+          images: ["mark", "type", "horizontal", "vertical"].map(
+            (v) => `/midas/logo/${v}-${c}.svg`,
+          ),
+        })),
+      },
+    },
+    {
+      heading: "Dashboard",
+      body: "The executive summary gives a high-level overview of financial performance: profit and loss, balance sheet, cash flow, financial health and key metrics, with the Midas assistant alongside to explain trends and answer questions about the numbers.",
+      stack: ["/midas/dashboard-1.png", "/midas/dashboard-2.png"],
+    },
+    {
+      heading: "Landing Page",
+      body: "The landing page introduces Midas and what it does, leading with the dashboard itself so visitors see the product straight away.",
+      stack: [1, 2, 3, 4, 5].map((n) => `/midas/landing-${n}.png`),
+    },
+    {
+      heading: "Reflections",
+      todo: true,
+      body: "What you learned designing Midas, what worked, and what you would do differently given another pass.",
+    },
+  ],
+};
+
 /* UI/UX gets its own copy of the collage so cards can carry case studies
    without changing the Other slide, which shares the same layout. */
 /* extra room between the first row of UI/UX cards and the second, whose
    tags sit lower now that every top-row card carries a study */
-const UIUX_ROW_GAP = 64;
+const UIUX_ROW_GAP = 48;
 
-/* The first row is the deck's; the second is re-cut to hold three cards
-   across the same width, and a third steps down by the same gap again. */
+/* The first row is the deck's. The two under it are hand-placed rather
+   than lined up, so the page keeps the scattered feel of the top row:
+   sizes, heights and left edges all differ a little. */
 const ROW_2 = COLLAGE[3].y + UIUX_ROW_GAP;
-const ROW_3 = ROW_2 + 276 + 122; // under row 2's tallest card
-
+const ROW_3 = ROW_2 + 262 + 104; // under row 2's tallest card (Midas)
 const UIUX_CARDS: CardBox[] = [
   { ...COLLAGE[0], name: "Klik AI", study: KLIK },
-  { ...COLLAGE[1], name: "Zenith Website", study: ZENITH },
-  { ...COLLAGE[2], name: "Product Discovery Kiosk", study: KIOSK },
-  { x: 42, y: ROW_2, w: 240, h: 262, name: "Midas Dashboard", date: "April 2026" },
+  /* swapped places, each keeping its own shape: the near-square kiosk
+     moves to the middle, the narrower Zenith to the right */
+  { ...COLLAGE[2], x: COLLAGE[1].x, name: "Product Discovery Kiosk", study: KIOSK },
+  /* a little higher than the slot it came from */
+  { ...COLLAGE[1], x: 910 - COLLAGE[1].w, y: COLLAGE[1].y - 24, name: "Zenith Website", study: ZENITH },
+  /* row 2: Midas sits a little higher on the left, Mixtape lower and
+     further in */
+  { x: 74, y: ROW_2 - 14, w: 246, h: 268, name: "Midas Dashboard", study: MIDAS },
   /* landscape, to suit its wide cover */
-  { x: 342, y: ROW_2, w: 280, h: 230, name: "Digital Mixtape", study: MIXTAPE },
-  { x: 682, y: ROW_2, w: 228, h: 276, name: "Blysk Handcrafted", study: BLYSK },
-  /* landscape, to suit its wide website cover */
-  { x: 88, y: ROW_3, w: 340, h: 250, name: "The Bounce Factor", study: BOUNCE },
+  { x: 448, y: ROW_2 + 14, w: 296, h: 236, name: "Digital Mixtape", study: MIXTAPE },
+  /* row 3: Blysk before The Bounce Factor, each its own size — Blysk a
+     near square stepped down and in, Bounce a wider landscape (to suit
+     its website cover) up and out to the right */
+  { x: 150, y: ROW_3 + 22, w: 276, h: 288, name: "Blysk Handcrafted", study: BLYSK },
+  { x: 540, y: ROW_3 - 6, w: 336, h: 244, name: "The Bounce Factor", study: BOUNCE },
 ];
 
 /* Physical Design keeps the plain collage */
@@ -539,7 +628,7 @@ const SLIDES: Slide[] = [
     ink: "#000000",
     accent: "#FF2E2E",
     strokeColor: "#000000",
-    heading: "TouchDesigner work",
+    heading: "TouchDesigner Work",
     works: [
       { name: "Project Name", blurb: "Short project description goes here." },
       { name: "Project Name", blurb: "Short project description goes here." },
@@ -709,8 +798,7 @@ export default function Page() {
 
   /* The frame is a literal 1280x720 so every value matches Figma exactly;
      scale it as a whole to fit the window. Below MOBILE the deck stops being
-     a fixed canvas and becomes an ordinary scrolling document, so it is left
-     unscaled and the media query in globals.css takes over the layout. */
+     a fixed canvas and stacks instead, so it is left unscaled and the media query in globals.css takes over the layout. */
   useEffect(() => {
     const fit = () => {
       const wide = window.matchMedia(`(min-width: ${MOBILE + 1}px)`).matches;
@@ -732,12 +820,11 @@ export default function Page() {
      container across slides, so without this a long case study would leave
      the next slide scrolled halfway down. The exception is backing out of a
      case study: that returns you to the card you opened, not to the top of
-     the work page. On mobile the window scrolls instead, so move both. */
+     the work page. */
   useEffect(() => {
     const top = returning.current ? parked.current : 0;
     returning.current = false;
     scrollRef.current?.scrollTo({ top });
-    window.scrollTo({ top });
   }, [slideId, project]);
 
   /* The current view lives in the URL hash — #uiux, #uiux/2, #uiux/2/expanded
@@ -869,8 +956,8 @@ export default function Page() {
   const full = Boolean(slide.cards || slide.works);
 
   const openProject = (i: number) => {
-    /* the slide scrolls on desktop, the window on mobile — see globals.css */
-    parked.current = scrollRef.current?.scrollTop || window.scrollY;
+    /* only the slide scrolls, on desktop and mobile alike */
+    parked.current = scrollRef.current?.scrollTop ?? 0;
     setProject(i);
   };
 
@@ -1295,6 +1382,10 @@ function CollageSlide({
                         ? "card__media card__media--cover card__media--grain grain--dusk"
                         : c.study.grain === "aura"
                         ? "card__media card__media--cover grain--aura"
+                        : c.study.grain === "dots"
+                        ? "card__media card__media--cover grain--dots"
+                        : c.study.grain === "sand"
+                        ? "card__media card__media--cover grain--sand"
                         : "card__media card__media--cover card__media--grain"
                   }
                   style={backdropStyle(c.study?.backdrop, { height: c.h })}
@@ -1521,6 +1612,10 @@ function CaseStudy({ study }: { study: Study }) {
                     ? "study__heroFrame grain--dusk"
                     : study.grain === "aura"
                       ? "study__heroFrame grain--aura"
+                      : study.grain === "dots"
+                        ? "study__heroFrame grain--dots"
+                        : study.grain === "sand"
+                          ? "study__heroFrame grain--sand"
                       : "study__heroFrame"
             }
             style={backdropStyle(study.backdrop)}
@@ -1589,10 +1684,17 @@ function StudySection({ section: s }: { section: Section }) {
     !s.moments &&
     !s.shot &&
     !s.steps &&
-    !s.groups;
+    !s.groups &&
+    !s.stack &&
+    !s.logos &&
+    !s.rows &&
+    !s.uses &&
+    !s.figRows;
   const cls = ["study__section"];
   if (s.compact) cls.push("study__section--compact");
   if (prose) cls.push("study__section--prose");
+  if (s.stack || s.logos || s.rows || s.uses || s.figRows)
+    cls.push("study__section--stack");
   return (
     <section className={cls.join(" ")}>
       <h2 className="study__heading">
@@ -1689,6 +1791,86 @@ function StudySection({ section: s }: { section: Section }) {
         </ol>
       )}
 
+      {s.logos && (
+        <div className="logos">
+          <span />
+          {s.logos.columns.map((c) => (
+            <p key={c} className="logos__col">{c}</p>
+          ))}
+          {s.logos.rows.map((row) => (
+            <Fragment key={row.label}>
+              <p className="logos__row">{row.label}</p>
+              {row.images.map((src, i) => (
+                <div
+                  key={src}
+                  className={row.dark ? "logos__tile logos__tile--dark" : "logos__tile"}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    className="logos__img"
+                    src={src}
+                    alt={`${row.label} ${s.logos!.columns[i]} logo`}
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </Fragment>
+          ))}
+        </div>
+      )}
+
+      {s.uses && (
+        <div className="uses">
+          {s.uses.map((u) => (
+            <div key={u.label} className="uses__group">
+              <p className="uses__label">{u.label}</p>
+              <div className={u.small ? "uses__row uses__row--small" : "uses__row"}>
+                {u.images.map((src) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={src} className="uses__img" src={src} alt={`${u.label} logo`} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {s.figRows && <FigRows rows={s.figRows} alt={s.heading} />}
+
+      {s.rows && (
+        <div className="study__stack">
+          {s.rows.map((row) => (
+            <div key={row.join()} className="study__imgRow">
+              {row.map((src) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  key={src}
+                  className="study__stackImg"
+                  src={src}
+                  alt={`${s.heading} image`}
+                  loading="lazy"
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {s.stack && (
+        <div className="study__stack">
+          {s.stack.map((src) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={src}
+              className="study__stackImg"
+              src={src}
+              alt={`${s.heading} screen`}
+              loading="lazy"
+            />
+          ))}
+        </div>
+      )}
+
       {s.groups?.map((g, gi) => (
         <div key={g.label ?? gi} className="study__group">
           {g.label && <p className="study__groupName">{g.label}</p>}
@@ -1710,6 +1892,56 @@ function StudySection({ section: s }: { section: Section }) {
         </div>
       ))}
     </section>
+  );
+}
+
+/* Rows of images that all share one height. Each image's flex-grow is its
+   own width / height, so in a full row the widths split in proportion and
+   the heights match. A row with less in it gets an empty spacer making up
+   the difference, so its images come out at that same height rather than
+   stretching to fill the width. Spacing is a margin on every image but the
+   first, never on the spacer, so it costs every row the same. */
+function FigRows({
+  rows,
+  alt,
+}: {
+  rows: NonNullable<Section["figRows"]>;
+  alt: string;
+}) {
+  const sum = (r: (typeof rows)[number]) =>
+    r.items.reduce((t, it) => t + it.w / it.h, 0);
+  const widest = Math.max(...rows.map(sum));
+  return (
+    <div className="figrows">
+      {rows.map((row, ri) => (
+        <div key={ri} className="figrows__row">
+          {row.label && <p className="figrows__label">{row.label}</p>}
+          <div className="figrows__items">
+            {row.items.map((it) => (
+              <figure
+                key={it.src}
+                className="figrows__item"
+                style={{ flex: `${it.w / it.h} 1 0` }}
+              >
+                {it.label && (
+                  <figcaption className="figrows__label">{it.label}</figcaption>
+                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  className="figrows__img"
+                  src={it.src}
+                  alt={it.label ?? row.label ?? alt}
+                  loading="lazy"
+                />
+              </figure>
+            ))}
+            {widest - sum(row) > 0.001 && (
+              <span aria-hidden style={{ flex: `${widest - sum(row)} 1 0` }} />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

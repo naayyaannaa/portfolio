@@ -860,6 +860,11 @@ a.accent:hover {
   position: relative;
   isolation: isolate;
   display: grid;
+  /* a fixed-size cell, so the cover's max-height: 100% has something to
+     resolve against. With an auto row the cell grows to the image's own
+     height, and a tall cover runs off the bottom of the card (Zenith on
+     mobile). */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   padding: 12px;
   overflow: hidden;
@@ -897,12 +902,12 @@ a.accent:hover {
   padding: 0;
 }
 
-/* The Bounce Factor's cover: a white square with an orange caustic over it,
-   lines highlighted in white and shadowed in black — see caustic.svg. No
+/* The Bounce Factor's cover: caustic refraction — the web of light thrown
+   through water, over yellow and orange (public/bounce/caustic.jpg). No
    grain. Doubled class so it beats .study__heroFrame and
    .card__media--grain. */
 .grain--dusk.grain--dusk {
-  background: #ffffff url("/bounce/caustic.svg") center / cover no-repeat;
+  background: #ffe9c2 url("/bounce/caustic.jpg") center / cover no-repeat;
 }
 
 /* room on the card for the caustic to show around the cover */
@@ -910,10 +915,10 @@ a.accent:hover {
   padding: 24px 32px;
 }
 
-/* lifts the cover gently off the panel */
+/* lifts the cover gently off the green */
 .grain--dusk .card__cover,
 .grain--dusk .study__heroImg {
-  box-shadow: 0 12px 32px rgba(43, 20, 6, 0.22);
+  box-shadow: 0 12px 32px rgba(8, 40, 14, 0.22);
 }
 
 /* Digital Mixtape's cover: a soft pink and blue aura, no grain. Doubled
@@ -933,6 +938,52 @@ a.accent:hover {
 .grain--aura .card__cover,
 .grain--aura .study__heroImg {
   filter: drop-shadow(0 8px 14px rgba(60, 40, 90, 0.2));
+}
+
+/* Midas's cover: a square grid drawn in light dotted lines on a dark grey
+   ground, no grain, so the cover stands out. Each tile draws its own top
+   and left edge. Doubled class so it beats .study__heroFrame and
+   .card__media--grain. */
+.grain--dots.grain--dots {
+  background-color: #121212;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M0 .5H24M.5 0V24' fill='none' stroke='%23d9d9d9' stroke-opacity='.45' stroke-width='1' stroke-dasharray='1.5 2.5'/%3E%3C/svg%3E");
+  background-size: 24px 24px;
+  background-position: center;
+}
+
+.grain--dots.card__media--cover {
+  padding: 20px 24px;
+}
+
+/* drop-shadow, not box-shadow: the cover's corners are transparent */
+.grain--dots .card__cover,
+.grain--dots .study__heroImg {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45));
+}
+
+/* Blysk Handcrafted's cover: grainy light beige, like desert sand — a
+   soft warm glow over a sand ground, with the noise tile laid twice so the
+   grain reads stronger than on the grey panels. Doubled class so it beats
+   .study__heroFrame and .card__media--grain. */
+.grain--sand.grain--sand {
+  background-color: #f1e7d4;
+  background-image:
+    url("/noise.svg"),
+    url("/noise.svg"),
+    radial-gradient(ellipse 80% 70% at 35% 30%, #faf4e8 0%, transparent 70%),
+    radial-gradient(ellipse 70% 60% at 75% 85%, #e6d5b6 0%, transparent 75%);
+  background-size: 160px 160px, 113px 113px, 100% 100%, 100% 100%;
+}
+
+/* only a slim margin, so the cover fills most of the card */
+.grain--sand.card__media--cover {
+  padding: 14px 16px;
+}
+
+/* drop-shadow, not box-shadow: the cover's gaps are transparent */
+.grain--sand .card__cover,
+.grain--sand .study__heroImg {
+  filter: drop-shadow(0 12px 22px rgba(70, 50, 20, 0.28));
 }
 
 /* the cover and whatever is stuck on it; the sticker's anchor */
@@ -1987,6 +2038,177 @@ a.accent:hover {
   border: 1px solid #000000;
 }
 
+/* full screenshots one under another, the same width as .study__embed */
+.study__stack {
+  margin: 40px auto 0;
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.study__stackImg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #000000;
+}
+
+/* a row of images, side by side when there are two */
+.study__imgRow {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+/* Blysk's logo by use: a small label over a hairline, the lockups in a row
+   under it — as on the brand sheet */
+.uses {
+  margin: 40px auto 0;
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.uses__label {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #5d5d5d;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.uses__row {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 24px 64px;
+}
+
+.uses__img {
+  display: block;
+  height: 96px;
+  width: auto;
+  max-width: 100%;
+}
+
+/* the long one-line lockups take half the row each, side by side, as on
+   the brand sheet */
+.uses__row--small .uses__img {
+  height: auto;
+  width: calc(50% - 32px);
+}
+
+/* rows of images at one shared height, across every row — see FigRows in
+   page.tsx */
+.figrows {
+  margin: 40px auto 0;
+  max-width: 82%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.figrows__items {
+  display: flex;
+  align-items: flex-end;
+}
+
+.figrows__item {
+  margin: 0;
+  min-width: 0;
+}
+
+/* the gap between images; never on the spacer, so every row loses the
+   same width to it and the heights still match */
+.figrows__item + .figrows__item {
+  margin-left: 24px;
+}
+
+/* an outline drawn inside the edge, not a border: a border adds the same
+   2px to every image's height whatever its width, which throws the
+   matched heights off by a pixel or so */
+.figrows__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  outline: 1px solid #000000;
+  outline-offset: -1px;
+}
+
+/* the small headings over the logo groups and the packaging images, in
+   Stack Sans like the rest of the titles */
+.uses__label,
+.figrows__label {
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.figrows__label {
+  margin: 0 0 10px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+/* the descriptions above the logo sheet and the dashboard and landing
+   page screens */
+.study__section--stack .study__caption {
+  font-size: 16px;
+}
+
+/* a logo sheet — variants across, colourways down, as wide as the embed */
+.logos {
+  margin: 40px auto 0;
+  max-width: 82%;
+  display: grid;
+  /* minmax(0, …) so every column is the same width whatever its header
+     says; plain 1fr grows to fit "Horizontal" */
+  grid-template-columns: auto repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: center;
+}
+
+.logos__col,
+.logos__row {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #5d5d5d;
+}
+
+.logos__row {
+  padding-right: 8px;
+}
+
+.logos__tile {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18%;
+  background: #ffffff;
+  border: 1px solid #000000;
+}
+
+.logos__tile--dark {
+  background: #000000;
+}
+
+/* SVGs, so they scale up to the tile and stay sharp */
+.logos__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Classic stepper scrollbar — far right, full height of the section  */
 /* ------------------------------------------------------------------ */
@@ -2368,6 +2590,12 @@ a.accent:hover {
     aspect-ratio: 4 / 3;
   }
 
+  /* the kiosk's green panel is drawn for a square; in a 4:3 box it shrinks
+     to the height and leaves wide white strips either side */
+  .has-backdrop.card__media {
+    aspect-ratio: 1;
+  }
+
   .card__name {
     font-size: 15px;
   }
@@ -2590,6 +2818,58 @@ a.accent:hover {
     height: max(420px, 62vh);
   }
 
+  .study__stack,
+  .logos,
+  .uses,
+  .figrows {
+    max-width: 88%;
+  }
+
+  .figrows__item + .figrows__item {
+    margin-left: 12px;
+  }
+
+  .study__imgRow {
+    gap: 12px;
+  }
+
+  /* the two primary logos stay side by side, as on the brand sheet; the
+     one-line lockups are too long for that, so they stack full width */
+  .uses__row {
+    gap: 20px 32px;
+  }
+
+  .uses__img {
+    height: auto;
+    width: calc(50% - 16px);
+  }
+
+  .uses__row--small .uses__img {
+    width: 100%;
+  }
+
+  .logos {
+    gap: 6px;
+  }
+
+  .logos__tile {
+    padding: 12%;
+  }
+
+  /* small enough that "Horizontal" fits over a phone-width column */
+  .logos__col,
+  .logos__row {
+    font-size: 11px;
+  }
+
+  .logos__col {
+    text-align: center;
+  }
+
+  .logos__row {
+    padding-right: 2px;
+  }
+
   .study__top .study__fact {
     grid-template-columns: 1fr;
     gap: 6px;
@@ -2712,60 +2992,3 @@ a.accent:hover {
   }
 }
 
-/* ---- mobile: the page itself scrolls, not the slide ----
-   Mobile browsers only tuck their address bar away when the document
-   scrolls, not when a box inside it does. So on phones the slide grows to
-   its content and the window scrolls instead, with the header pinned at the
-   top and the slide picker pinned at the bottom, so the shell still looks
-   like a fixed viewport. An expanded case study is a fixed overlay with its
-   own scroll, as before, and locks the page behind it. */
-@media (max-width: 900px) {
-  html,
-  body {
-    height: auto;
-  }
-
-  body {
-    overflow: visible;
-  }
-
-  body:has(.is-expanded) {
-    overflow: hidden;
-  }
-
-  .frame {
-    height: auto;
-    min-height: 100dvh;
-  }
-
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-  }
-
-  .rail {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
-  }
-
-  .stage {
-    flex: 1 0 auto;
-  }
-
-  .frame:not(.is-expanded) .slide {
-    max-height: none;
-  }
-
-  .frame:not(.is-expanded) .slide--full {
-    height: auto;
-    flex: 1 0 auto;
-  }
-
-  .frame:not(.is-expanded) .slide__scroll {
-    flex: none;
-    height: auto;
-    overflow: visible;
-  }
-}
