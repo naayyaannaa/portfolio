@@ -687,8 +687,8 @@ a.accent:hover {
 }
 
 /* At rest the slight grey stroke every other cover has. Pointed at, a
-   picture frame: a thick red moulding with a thin black edge inside and
-   out. Drawn with box-shadow so the frame grows outward and nothing on the
+   picture frame: a band of the slide's colour with a thin black edge
+   inside and out. Drawn with box-shadow so the frame grows outward and nothing on the
    wall shifts. */
 .wall__frame {
   display: block;
@@ -702,12 +702,13 @@ a.accent:hover {
     border-color 0.1s linear;
 }
 
+/* the same 5 + 1 as the Design pages' cards (.card:hover .card__media) */
 .wall__card:hover .wall__frame,
 .wall__card:focus-visible .wall__frame {
   border-color: var(--ink);
   box-shadow:
-    0 0 0 10px var(--accent),
-    0 0 0 11px var(--ink);
+    0 0 0 5px var(--accent),
+    0 0 0 6px var(--ink);
 }
 
 .wall__cover {
@@ -2689,24 +2690,30 @@ a.accent:hover {
     margin-top: 28px !important;
   }
 
+  /* minmax(0, …) so the column can't be pushed wider than the panel by
+     whatever is inside it */
   .wall__panel {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 20px;
     padding: 48px 16px 20px;
   }
 
-  .wall__media,
-  .wall__media--tall {
-    width: 100%;
-    height: auto;
-    max-height: 70dvh;
-    justify-self: center;
+  /* the wall is a flex item of .work's column, so it would otherwise grow
+     to fit its widest piece instead of the screen */
+  .wall {
+    min-width: 0;
   }
 
+  /* As wide as the panel allows, but no taller than 70% of the screen: the
+     width is whichever is smaller, the panel or 70dvh at the video's own
+     shape (--ratio, set inline), and the height follows from
+     aspect-ratio — so the whole frame always shows, uncropped. */
+  .wall__media,
   .wall__media--tall {
-    width: auto;
-    height: 70dvh;
-    max-width: 100%;
+    width: min(100%, calc(70dvh * var(--ratio, 1)));
+    height: auto;
+    max-height: none;
+    justify-self: center;
   }
 
   .wall__info {

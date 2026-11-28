@@ -190,15 +190,88 @@ const TD_WORKS: Work[] = [
     blurb:
       "Inspired by the movements of a real dandelion, I modeled the dandelion myself in TouchDesigner and used the MediaPipe plugin to make it responsive to my movements.",
   },
-  { name: "constructing memories", ...td("constructing-memories"), ratio: 1078 / 1280, w: 190, dy: 0 },
-  { name: "magical tree", ...td("magical-tree"), ratio: PORTRAIT, w: 170, dy: 90 },
-  { name: "haunting beach", ...td("haunting-beach"), ratio: PORTRAIT, w: 180, dy: -60, row: true },
-  { name: "jellyfish", ...td("jellyfish"), ratio: PORTRAIT, w: 180, dy: -90 },
-  { name: "pollinating bee", ...td("pollinating-bee"), ratio: 1078 / 602, w: 250, dy: 10 },
-  { name: "love letter to the beach", ...td("love-letter-to-the-beach"), ratio: PORTRAIT, w: 172, dy: -30 },
-  { name: "gallery of a time i miss", ...td("gallery-of-a-time-i-miss"), ratio: PORTRAIT, w: 190, dy: -40, row: true },
-  { name: "bubble wand", ...td("bubble-wand"), ratio: PORTRAIT, w: 170, dy: 30 },
-  { name: "ripple touch", ...td("ripple-touch"), ratio: 3 / 2, w: 260, dy: -20 },
+  {
+    name: "constructing memories",
+    ...td("constructing-memories"),
+    ratio: 1078 / 1280,
+    w: 190,
+    dy: 0,
+    blurb:
+      "This is how I imagine our memories are built in our minds. This project takes a video and converts it into a 3D-styled model using POPs manipulation.",
+  },
+  {
+    name: "gallery of a time i miss",
+    ...td("gallery-of-a-time-i-miss"),
+    ratio: PORTRAIT,
+    w: 190,
+    dy: 90,
+    blurb:
+      "Here I've created an interactive gallery using instancing. I wanted to capture the feeling of walking through our memories and exploring.",
+  },
+  {
+    name: "haunting beach",
+    ...td("haunting-beach"),
+    ratio: PORTRAIT,
+    w: 180,
+    dy: -60,
+    row: true,
+    blurb:
+      "I played around with different operators to create my own visual effects on this video I captured at the beach, giving it a haunting feel.",
+  },
+  {
+    name: "jellyfish",
+    ...td("jellyfish"),
+    ratio: PORTRAIT,
+    w: 180,
+    dy: -90,
+    blurb:
+      "I like to think of these as my little jellyfish beings. They're modeled using POPs and made interactive through the MediaPipe plugin.",
+  },
+  {
+    name: "pollinating bug",
+    ...td("pollinating-bee"),
+    ratio: 1078 / 602,
+    w: 250,
+    dy: 10,
+    blurb:
+      "I took this video of the pollinating bug from my mother's garden and created this visual effect. This is one of my favourite videos.",
+  },
+  {
+    name: "love letter to the beach",
+    ...td("love-letter-to-the-beach"),
+    ratio: PORTRAIT,
+    w: 172,
+    dy: -30,
+    blurb:
+      "I combined pictures I've taken at the beach to make a unique gallery using POPs.",
+  },
+  {
+    name: "magical tree",
+    ...td("magical-tree"),
+    ratio: PORTRAIT,
+    w: 170,
+    dy: -40,
+    row: true,
+    blurb:
+      "Using an L-system and instancing, I've created this tree model and made it interactive with the MediaPipe plugin.",
+  },
+  {
+    name: "bubble wand",
+    ...td("bubble-wand"),
+    ratio: PORTRAIT,
+    w: 170,
+    dy: 30,
+    blurb:
+      "I wanted to recreate the bubble wand we would play with as a child. The wand and bubbles were modeled by me and made interactive through the MediaPipe plugin.",
+  },
+  {
+    name: "ripple touch",
+    ...td("ripple-touch"),
+    ratio: 3 / 2,
+    w: 260,
+    dy: -20,
+    blurb: "A fun effect of everything being a reflection in water.",
+  },
 ].map((w: Work) => ({ ...w, blurb: w.blurb ?? TD_BLURB }));
 
 type Slide = {
@@ -650,9 +723,9 @@ const UIUX_CARDS: CardBox[] = [
 /* Physical Design: the collage's top row of three, still blank covers
    until the artwork is in */
 const OTHER_CARDS: CardBox[] = [
-  { ...COLLAGE[0], name: "Nails" },
-  { ...COLLAGE[1], name: "Jewelry" },
-  { ...COLLAGE[2], name: "Paintings & Doodles" },
+  { ...COLLAGE[0], name: "nails" },
+  { ...COLLAGE[1], name: "jewelry" },
+  { ...COLLAGE[2], name: "paintings & doodles" },
 ];
 
 const SLIDES: Slide[] = [
@@ -1262,10 +1335,11 @@ function Contact() {
   );
 }
 
-/* Play glyph: a plain white right-pointing triangle on a 9x11 grid, each
-   row a stair step wider towards the middle. Drawn at 4x, crisp, like the
-   rest of the pixel art; the shadow under it is CSS (.wall__play svg). */
-const PLAY_ROWS = [1, 2, 4, 6, 7, 9, 7, 6, 4, 2, 1];
+/* Play glyph: a plain white right-pointing triangle on a 5x9 grid, each
+   row exactly one pixel wider towards the middle so every step is a single
+   square pixel. Drawn at 4x, crisp, like the rest of the pixel art; the
+   shadow under it is CSS (.wall__play svg). */
+const PLAY_ROWS = [1, 2, 3, 4, 5, 4, 3, 2, 1];
 const PLAY_FILL = PLAY_ROWS.flatMap((n, y) =>
   Array.from({ length: n }, (_, x) => [x, y]),
 );
@@ -1273,9 +1347,9 @@ const PLAY_FILL = PLAY_ROWS.flatMap((n, y) =>
 function PixelPlay() {
   return (
     <svg
-      viewBox="0 0 9 11"
-      width="36"
-      height="44"
+      viewBox="0 0 5 9"
+      width="20"
+      height="36"
       shapeRendering="crispEdges"
       fill="#fff"
       aria-hidden="true"
@@ -1446,7 +1520,9 @@ function GallerySlide({
                 <div className="wall__panel">
                   <div
                     className={w.ratio < 1 ? "wall__media wall__media--tall" : "wall__media"}
-                    style={{ aspectRatio: w.ratio }}
+                    style={
+                      { aspectRatio: w.ratio, "--ratio": w.ratio } as React.CSSProperties
+                    }
                   >
                     <video
                       ref={video}
