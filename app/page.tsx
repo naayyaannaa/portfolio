@@ -304,6 +304,22 @@ const BLYSK: Study = {
   ],
   sections: [
     {
+      heading: "Project Context",
+      context: [
+        { label: "Client", value: "A handcrafted jewelry brand." },
+        {
+          label: "Objective",
+          value:
+            "A cohesive visual identity that reflects the brand’s craftsmanship and elegance.",
+        },
+        {
+          label: "Solution Brief",
+          value:
+            "A logo, packaging and Amazon seller marketing assets that balance elegance with accessibility, so the brand resonates with modern jewelry buyers and stands out in a competitive marketplace.",
+        },
+      ],
+    },
+    {
       heading: "Logo",
       uses: [
         {
@@ -574,6 +590,25 @@ const BOUNCE: Study = {
   ],
   sections: [
     {
+      heading: "Project Context",
+      context: [
+        {
+          label: "Client",
+          value: "A sportswear brand making custom jerseys for teams.",
+        },
+        {
+          label: "Objective",
+          value:
+            "Bring the brand’s team spirit to life, with jerseys designed for performance and identity.",
+        },
+        {
+          label: "Solution Brief",
+          value:
+            "A website for the brand, and designs around its jerseys for promotional material and social media.",
+        },
+      ],
+    },
+    {
       heading: "Brand Elements",
       body: "Designs made around the brand's jerseys, used as promotional material and as posts on its social media.",
       groups: [
@@ -608,6 +643,7 @@ const ZENITH: Study = {
   hero: "/zenith/hero.png", // media/zenith.png, on the grey grain
   facts: [
     { label: "Role", value: "Head of Design" },
+    { label: "Team", value: "Junior Designer · Copywriter · SEO Specialist" },
     { label: "Timeline", value: "2 months" },
     { label: "Tools", value: "Figma · Photoshop · Claude Code" },
   ],
@@ -658,6 +694,22 @@ const MIDAS: Study = {
     { label: "Tools", value: "Claude Code · Figma · FigJam · Photoshop" },
   ],
   sections: [
+    {
+      heading: "Project Context",
+      context: [
+        {
+          label: "Problem",
+          value:
+            "Companies need to see what breaks first in their business and how to prevent it.",
+        },
+        { label: "Client", value: "Zenith, for its own product." },
+        {
+          label: "Solution Brief",
+          value:
+            "An AI CFO that connects a company’s financial, operational and growth data in one place.",
+        },
+      ],
+    },
     {
       heading: "Logo Design",
       body: "The mark is a spiral, drawn to feel like gold being worked into shape, and it is paired with a serif wordmark. It comes in four versions, the mark, the wordmark, and horizontal and vertical lockups, each in gold, black and white so it works on any background.",
@@ -1922,6 +1974,13 @@ function CaseStudy({ study }: { study: Study }) {
         </>
       )}
 
+      {/* Project Context leads, ahead of any prototype or video */}
+      {study.sections
+        .filter((s) => s.context)
+        .map((s) => (
+          <StudySection key={s.heading} section={s} />
+        ))}
+
       {study.embed && (
         <section className="study__section">
           <div className="study__embedHead">
@@ -1954,9 +2013,11 @@ function CaseStudy({ study }: { study: Study }) {
         </section>
       )}
 
-      {study.sections.map((s) => (
-        <StudySection key={s.heading} section={s} />
-      ))}
+      {study.sections
+        .filter((s) => !s.context)
+        .map((s) => (
+          <StudySection key={s.heading} section={s} />
+        ))}
     </div>
   );
 }
