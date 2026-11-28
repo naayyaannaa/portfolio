@@ -151,15 +151,55 @@ type Study = {
   sections: Section[];
 };
 
-/* A row on the TouchDesigner reel. The red block is a cover sitting over the
-   video — drop an .mp4 in public/videos and point `video` at it; a row with
-   no video still slides open, onto an empty placeholder. */
+/* A piece on the TouchDesigner gallery wall. Files live in public/td
+   (compressed from media/td vids); the cover is a still from the video.
+   `w` is the cover's width on the wall and `dy` how far it hangs below the
+   top of its row — the gaps between covers are all the same (.wall's
+   column-gap), so the scatter is in the sizes and drops alone. `row` starts
+   a new row. `ratio` is the video's width / height. */
 type Work = {
   name: string;
   blurb?: string;
-  video?: string;
-  poster?: string;
+  video: string;
+  poster: string;
+  ratio: number;
+  w: number;
+  dy: number;
+  row?: boolean;
 };
+
+const td = (slug: string) => ({
+  video: `/td/${slug}.mp4`,
+  poster: `/td/${slug}.jpg`,
+});
+const PORTRAIT = 9 / 16;
+const TD_BLURB = "Short project description goes here.";
+
+/* Hung in rows of three, four and three, each row centred with the same
+   gap between every cover; sizes and drops differ so nothing lines up. */
+/* extra air either side of each cover, per row: the rows of three are
+   spread wider than the row of four, which only just fits */
+const TD_ROW_AIR = [20, 0, 20];
+const TD_WORKS: Work[] = [
+  {
+    name: "dandelion",
+    ...td("dandelion"),
+    ratio: PORTRAIT,
+    w: 160,
+    dy: 30,
+    blurb:
+      "Inspired by the movements of a real dandelion, I modeled the dandelion myself in TouchDesigner and used the MediaPipe plugin to make it responsive to my movements.",
+  },
+  { name: "constructing memories", ...td("constructing-memories"), ratio: 1078 / 1280, w: 190, dy: 0 },
+  { name: "magical tree", ...td("magical-tree"), ratio: PORTRAIT, w: 170, dy: 90 },
+  { name: "haunting beach", ...td("haunting-beach"), ratio: PORTRAIT, w: 180, dy: -60, row: true },
+  { name: "jellyfish", ...td("jellyfish"), ratio: PORTRAIT, w: 180, dy: -90 },
+  { name: "pollinating bee", ...td("pollinating-bee"), ratio: 1078 / 602, w: 250, dy: 10 },
+  { name: "love letter to the beach", ...td("love-letter-to-the-beach"), ratio: PORTRAIT, w: 172, dy: -30 },
+  { name: "gallery of a time i miss", ...td("gallery-of-a-time-i-miss"), ratio: PORTRAIT, w: 190, dy: -40, row: true },
+  { name: "bubble wand", ...td("bubble-wand"), ratio: PORTRAIT, w: 170, dy: 30 },
+  { name: "ripple touch", ...td("ripple-touch"), ratio: 3 / 2, w: 260, dy: -20 },
+].map((w: Work) => ({ ...w, blurb: w.blurb ?? TD_BLURB }));
 
 type Slide = {
   id: string;
@@ -169,6 +209,7 @@ type Slide = {
   accent: string;
   strokeColor?: string;
   heading?: string;
+  intro?: string; // a line or two under the heading
   works?: Work[];
   cards?: CardBox[];
 };
@@ -606,8 +647,13 @@ const UIUX_CARDS: CardBox[] = [
   { x: 540, y: ROW_3 - 6, w: 336, h: 244, name: "The Bounce Factor", study: BOUNCE },
 ];
 
-/* Physical Design keeps the plain collage */
-const OTHER_CARDS: CardBox[] = COLLAGE;
+/* Physical Design: the collage's top row of three, still blank covers
+   until the artwork is in */
+const OTHER_CARDS: CardBox[] = [
+  { ...COLLAGE[0], name: "Nails" },
+  { ...COLLAGE[1], name: "Jewelry" },
+  { ...COLLAGE[2], name: "Paintings & Doodles" },
+];
 
 const SLIDES: Slide[] = [
   { id: "home", title: "Home", color: "#FF2E77", ink: "#000000", accent: "#FF2E77" },
@@ -624,25 +670,21 @@ const SLIDES: Slide[] = [
   {
     id: "touchdesigner",
     title: "Touch-designer",
-    color: "#FF2E2E",
+    color: "#FFFC2E",
     ink: "#000000",
-    accent: "#FF2E2E",
+    accent: "#FFFC2E",
     strokeColor: "#000000",
     heading: "TouchDesigner Work",
-    works: [
-      { name: "Project Name", blurb: "Short project description goes here." },
-      { name: "Project Name", blurb: "Short project description goes here." },
-      { name: "Project Name", blurb: "Short project description goes here." },
-      { name: "Project Name", blurb: "Short project description goes here." },
-      { name: "Project Name", blurb: "Short project description goes here." },
-    ],
+    intro:
+      "TouchDesigner is a node-based visual programming language for real-time interactive multimedia content. I started learning TouchDesigner this year and have really come to love experimenting with it. Hope you like my work.",
+    works: TD_WORKS,
   },
   {
     id: "other",
     title: "Physical Design",
-    color: "#FFFC2E",
+    color: "#FF2E2E",
     ink: "#000000",
-    accent: "#FFFC2E",
+    accent: "#FF2E2E",
     strokeColor: "#000000",
     heading: "Physical Design Work",
     cards: OTHER_CARDS,
@@ -1155,8 +1197,9 @@ export default function Page() {
                   onOpen={openProject}
                 />
               ) : slide.works ? (
-                <ReelSlide
+                <GallerySlide
                   heading={slide.heading ?? slide.title}
+                  intro={slide.intro}
                   works={slide.works}
                 />
               ) : slide.id === "contact" ? (
@@ -1219,97 +1262,266 @@ function Contact() {
   );
 }
 
-/* Reel layout — TouchDesigner. Ruled rows, each with a red block sitting in
-   the bottom-right corner. Pointing at a row opens the whole row accordion-
-   style: it grows from 89 to 190, and because everything in it is bottom-
-   aligned the block stretches to a 16:9 frame while the name rides down with
-   the rule. The red cover slides up out of that frame as it grows, uncovering
-   the video. Rows below are pushed down by ordinary flow.
-   One row is open at a time; closing rewinds, so a row always opens on its
-   first frame. */
-function ReelSlide({ heading, works }: { heading: string; works: Work[] }) {
-  const [open, setOpen] = useState<number | null>(null);
-  const videos = useRef<(HTMLVideoElement | null)[]>([]);
+/* Play glyph: a plain white right-pointing triangle on a 9x11 grid, each
+   row a stair step wider towards the middle. Drawn at 4x, crisp, like the
+   rest of the pixel art; the shadow under it is CSS (.wall__play svg). */
+const PLAY_ROWS = [1, 2, 4, 6, 7, 9, 7, 6, 4, 2, 1];
+const PLAY_FILL = PLAY_ROWS.flatMap((n, y) =>
+  Array.from({ length: n }, (_, x) => [x, y]),
+);
 
-  /* Drive playback off the open row rather than off the pointer, so the row
-     that closes because another one opened is rewound too.
-     play() rejects when the browser declines to autoplay — the row still
-     opens, so there is nothing to recover from. */
-  useEffect(() => {
-    videos.current.forEach((v, i) => {
-      if (!v) return;
-      if (i === open) {
-        v.play().catch(() => {});
-      } else {
-        v.pause();
-        v.currentTime = 0;
-      }
-    });
+function PixelPlay() {
+  return (
+    <svg
+      viewBox="0 0 9 11"
+      width="36"
+      height="44"
+      shapeRendering="crispEdges"
+      fill="#fff"
+      aria-hidden="true"
+    >
+      {PLAY_FILL.map(([x, y]) => (
+        <rect key={`${x},${y}`} x={x} y={y} width="1" height="1" />
+      ))}
+    </svg>
+  );
+}
+
+/* one pace for the whole wall, so the piece opening and the pieces making
+   room for it move as one */
+const FLIP: KeyframeAnimationOptions = {
+  duration: 700,
+  easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+};
+
+/* Gallery wall — TouchDesigner. The videos hang in loose, centred rows,
+   each its own size and height, the way the Design page's collage is
+   scattered. Pointing at one puts a red frame round it; clicking opens it
+   in place, across the whole wall, with the video on the left and its
+   title and description on the right. The open piece grows out of its
+   cover into the panel, and everything else slides aside to make room
+   (FLIP: measure every piece before and after, then play each from where
+   it was). While a piece is open, the covers that hang up into the row
+   above (a negative `dy`) drop back to their row's top, so nothing
+   overlaps the panel. One piece is open at a time. */
+function GallerySlide({
+  heading,
+  intro,
+  works,
+}: {
+  heading: string;
+  intro?: string;
+  works: Work[];
+}) {
+  const [open, setOpen] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const items = useRef<(HTMLLIElement | null)[]>([]);
+  const before = useRef<Map<number, DOMRect>>(new Map());
+  const was = useRef<number | null>(null);
+  const video = useRef<HTMLVideoElement>(null);
+  /* which row each piece hangs in, counted off the `row` breaks */
+  const rowOf = works.reduce<number[]>(
+    (acc, w, i) => [...acc, (i ? acc[i - 1] : 0) + (i && w.row ? 1 : 0)],
+    [],
+  );
+
+  const show = useCallback(
+    (i: number | null) => {
+      const m = new Map<number, DOMRect>();
+      items.current.forEach((el, j) => {
+        if (el) m.set(j, el.getBoundingClientRect());
+      });
+      before.current = m;
+      was.current = open;
+      setPlaying(false);
+      setOpen(i);
+    },
+    [open],
+  );
+
+  useLayoutEffect(() => {
+    const prev = before.current;
+    if (!prev.size) return;
+    before.current = new Map();
+    const target = open !== null ? items.current[open] : null;
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      items.current.forEach((el, j) => {
+        const from = prev.get(j);
+        if (!el || !from) return;
+        const to = el.getBoundingClientRect();
+        /* the deck is transform-scaled, so convert screen px to design px */
+        const fit = el.offsetWidth ? to.width / el.offsetWidth : 1;
+        const dx = (from.left - to.left) / fit;
+        const dy = (from.top - to.top) / fit;
+        /* The piece opening grows out of its cover: the panel starts
+           squeezed to the cover's box and stretches to its own, while its
+           contents fade in once it has mostly arrived. */
+        if (j === open) {
+          el.animate(
+            [
+              {
+                transformOrigin: "0 0",
+                transform: `translate(${dx}px, ${dy}px) scale(${from.width / to.width}, ${from.height / to.height})`,
+              },
+              { transformOrigin: "0 0", transform: "none" },
+            ],
+            FLIP,
+          );
+          el.querySelectorAll(".wall__panel > *").forEach((kid) =>
+            kid.animate([{ opacity: 0 }, { opacity: 1 }], {
+              duration: 350,
+              delay: 300,
+              easing: "ease-out",
+              fill: "backwards",
+            }),
+          );
+          return;
+        }
+        /* the piece closing settles back in as a cover */
+        if (j === was.current) {
+          el.animate(
+            [
+              { opacity: 0, transform: "scale(0.92)" },
+              { opacity: 1, transform: "none" },
+            ],
+            FLIP,
+          );
+          return;
+        }
+        if (!dx && !dy) return;
+        el.animate(
+          [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }],
+          FLIP,
+        );
+      });
+    }
+    target?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [open]);
 
+  /* escape shuts the open piece */
+  useEffect(() => {
+    if (open === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") show(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, show]);
+
+  /* Starts with sound, since a click opened it. If the browser still won't
+     allow that, it plays muted rather than not at all; failing that, the
+     play button stays up. */
+  const play = useCallback(() => {
+    const v = video.current;
+    if (!v) return;
+    v.play().catch(() => {
+      v.muted = true;
+      v.play().catch(() => {});
+    });
+  }, []);
+
+  /* a piece plays as soon as it opens */
+  useEffect(() => {
+    if (open !== null) play();
+  }, [open, play]);
+
+  const pause = () => video.current?.pause();
+
   return (
-    <div className="work work--reel">
+    <div className="work work--wall">
       <h1 className="work__title">{heading}</h1>
-      <ul className="work__reel">
-        {works.map((w, i) => {
-          const isOpen = open === i;
-          return (
-            <li key={i} className={isOpen ? "reel__row is-open" : "reel__row"}>
-              {/* click toggles: opening one row closes the others, and
-                  clicking the open row shuts it again. Same gesture on touch
-                  and pointer, and Enter/Space on the focused button lands on
-                  it too. */}
-              <button
-                type="button"
-                className="reel"
-                aria-expanded={isOpen}
-                onClick={() => setOpen(isOpen ? null : i)}
+      {intro && <p className="work__intro">{intro}</p>}
+      <ul className="wall">
+        {works.map((w, i) => (
+          <Fragment key={i}>
+            {/* forces the row break, so every row keeps its pieces */}
+            {w.row && <li className="wall__break" aria-hidden="true" />}
+            {open === i ? (
+              <li
+                ref={(el) => {
+                  items.current[i] = el;
+                }}
+                className="wall__item is-open"
               >
-                <span className="reel__text">
-                  <span className="reel__head">
-                    {/* points down closed, up open — decorative, since
-                        aria-expanded already carries the state */}
-                    <span className="reel__arrow" aria-hidden="true">
-                      <PixelChevron />
-                    </span>
-                    <span className="reel__name">{w.name}</span>
-                  </span>
-                  {w.blurb ? (
-                    <span className="reel__blurb">
-                      <span className="reel__blurbText">{w.blurb}</span>
-                    </span>
-                  ) : null}
-                </span>
-                <span className="reel__side">
-                  <span className="reel__media">
-                    {w.video ? (
-                      <video
-                        ref={(el) => {
-                          videos.current[i] = el;
-                        }}
-                        className="reel__video"
-                        src={w.video}
-                        poster={w.poster}
-                        muted
-                        loop
-                        playsInline
-                        preload="metadata"
-                      />
-                    ) : (
-                      /* video goes here */
-                      <span className="reel__slot" />
+                <div className="wall__panel">
+                  <div
+                    className={w.ratio < 1 ? "wall__media wall__media--tall" : "wall__media"}
+                    style={{ aspectRatio: w.ratio }}
+                  >
+                    <video
+                      ref={video}
+                      className="wall__video"
+                      src={w.video}
+                      poster={w.poster}
+                      playsInline
+                      preload="auto"
+                      onClick={playing ? pause : play}
+                      /* the button follows the video itself, however it
+                         was started or stopped */
+                      onPlay={() => setPlaying(true)}
+                      onPause={() => setPlaying(false)}
+                      onEnded={() => setPlaying(false)}
+                    />
+                    {!playing && (
+                      <button
+                        type="button"
+                        className="wall__play"
+                        aria-label={`Play ${w.name}`}
+                        onClick={play}
+                      >
+                        <PixelPlay />
+                      </button>
                     )}
-                    <span className="reel__cover" />
+                  </div>
+                  <div className="wall__info">
+                    <h2 className="wall__name">{w.name}</h2>
+                    {w.blurb && <p className="wall__blurb">{w.blurb}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    className="iconbtn wall__close"
+                    aria-label="Close"
+                    onClick={() => show(null)}
+                  >
+                    <PixelX />
+                  </button>
+                </div>
+              </li>
+            ) : (
+              <li
+                ref={(el) => {
+                  items.current[i] = el;
+                }}
+                className="wall__item"
+                style={{
+                  width: w.w,
+                  marginTop: open === null ? w.dy : Math.max(0, w.dy),
+                  marginInline: TD_ROW_AIR[rowOf[i]] ?? 0,
+                }}
+              >
+                <button type="button" className="wall__card" onClick={() => show(i)}>
+                  <span className="wall__frame">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      className="wall__cover"
+                      src={w.poster}
+                      alt=""
+                      style={{ aspectRatio: w.ratio }}
+                    />
                   </span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
+                  <span className="card__name">
+                    ({i + 1}) {w.name}
+                  </span>
+                </button>
+              </li>
+            )}
+          </Fragment>
+        ))}
       </ul>
     </div>
   );
 }
+
 
 /* Collage layout — each card is placed and sized individually, measured
    off the deck. Used by UI/UX and Other. */
